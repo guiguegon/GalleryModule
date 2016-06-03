@@ -1,0 +1,4 @@
+<resources>
+    <string name="gallery_application_name">Gallery Sample App</string>
+    <string name="title_activity_main">Main Activity</string>
+</resources>

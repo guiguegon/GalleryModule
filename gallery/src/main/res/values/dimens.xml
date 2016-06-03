@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="gallery_item_min_width">100dp</dimen>
+    <dimen name="gallery_item_height">100dp</dimen>
+    <dimen name="gallery_header_height">100dp</dimen>
+</resources>
