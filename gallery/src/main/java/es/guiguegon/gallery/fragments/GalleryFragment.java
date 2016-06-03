@@ -3,18 +3,13 @@ package es.guiguegon.gallery.fragments;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,12 +21,14 @@ import es.guiguegon.gallery.GalleryActivity;
 import es.guiguegon.gallery.R;
 import es.guiguegon.gallery.adapters.GalleryAdapter;
 import es.guiguegon.gallery.helpers.CameraHelper;
+import es.guiguegon.gallery.helpers.GalleryHelper;
 import es.guiguegon.gallery.helpers.PermissionsManager;
 import es.guiguegon.gallery.model.GalleryMedia;
 import es.guiguegon.gallery.utils.ScreenUtils;
 import java.util.ArrayList;
+import java.util.List;
 
-public class GalleryFragment extends Fragment implements GalleryAdapter.OnGalleryClickListener {
+public class GalleryFragment extends Fragment implements GalleryAdapter.OnGalleryClickListener, GalleryHelper.GalleryHelperListener {
 
     private static final String KEY_GALLERY_MEDIAS = "key_gallery_medias";
     private final String TAG = "[" + this.getClass().getSimpleName() + "]";
@@ -46,8 +43,7 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
     GalleryAdapter galleryAdapter;
     StaggeredGridLayoutManager staggeredGridLayoutManager;
     CameraHelper cameraHelper;
-
-    Handler handler = new Handler();
+    GalleryHelper galleryHelper;
 
     public static GalleryFragment newInstance() {
         GalleryFragment fragment = new GalleryFragment();
@@ -70,6 +66,7 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
         btnRetry = (Button) view.findViewById(R.id.btn_retry);
         emptyTextview = (TextView) view.findViewById(R.id.empty_textview);
         cameraHelper = new CameraHelper(getContext());
+        galleryHelper = new GalleryHelper(getContext(), this);
         setupUi();
         if (savedInstanceState == null) {
             init();
@@ -200,37 +197,7 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
     }
 
     public void getGalleryImages() {
-        AsyncTask.execute(() -> {
-            ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
-            try {
-                final String[] columns = {
-                        MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID, MediaStore.Images.Media.MIME_TYPE,
-                        MediaStore.Images.Media.DATE_TAKEN
-                };
-                final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
-                Cursor imageCursor = getContext().getContentResolver()
-                        .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null, null, orderBy + " DESC");
-                if (imageCursor != null) {
-                    int dataColumnIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.DATA);
-                    int idColumnIndex = imageCursor.getColumnIndex(MediaStore.Images.Media._ID);
-                    int mimeTypeColumIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE);
-                    int dateTakenColumIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN);
-                    imageCursor.moveToFirst();
-                    int videoCount = imageCursor.getCount();
-                    for (int i = 0; i < videoCount; i++) {
-                        galleryMedias.add(new GalleryMedia().setMediaUri(imageCursor.getString(dataColumnIndex))
-                                .setId(imageCursor.getLong(idColumnIndex))
-                                .setMimeType(imageCursor.getString(mimeTypeColumIndex))
-                                .setDateTaken(imageCursor.getLong(dateTakenColumIndex)));
-                        imageCursor.moveToNext();
-                    }
-                    imageCursor.close();
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "[getGalleryImages]", e);
-            }
-            handler.post(() -> onGalleryMedia(galleryMedias));
-        });
+        galleryHelper.getGalleryAsync();
     }
 
     public void showError(String message) {
@@ -244,7 +211,7 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
         hideEmptyList();
     }
 
-    public void onGalleryMedia(ArrayList<GalleryMedia> galleryMedias) {
+    public void onGalleryMedia(List<GalleryMedia> galleryMedias) {
         this.galleryMedias.addAll(0, galleryMedias);
         galleryAdapter.addGalleryImage(galleryMedias);
         hideEmptyList();
@@ -259,5 +226,10 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
 
     void onButtonRetryClick(View view) {
         init();
+    }
+
+    @Override
+    public void onGalleryReady(List<GalleryMedia> galleryMedias) {
+        onGalleryMedia(galleryMedias);
     }
 }

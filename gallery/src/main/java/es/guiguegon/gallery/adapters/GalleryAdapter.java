@@ -14,6 +14,7 @@ import es.guiguegon.gallery.model.GalleryMedia;
 import es.guiguegon.gallery.utils.ImageUtils;
 import es.guiguegon.gallery.utils.ScreenUtils;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -44,7 +45,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyItemInserted(1);
     }
 
-    public void addGalleryImage(ArrayList<GalleryMedia> galleryMedias) {
+    public void addGalleryImage(List<GalleryMedia> galleryMedias) {
         this.galleryMedias.addAll(galleryMedias);
         notifyItemRangeInserted(1, galleryMedias.size());
     }
