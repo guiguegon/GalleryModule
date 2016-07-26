@@ -2,66 +2,82 @@ package es.guiguegon.gallery.helpers;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.os.AsyncTask;
-import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 import es.guiguegon.gallery.model.GalleryMedia;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by guiguegon on 23/10/2015.
  */
 public class GalleryHelper {
 
-    public interface GalleryHelperListener {
-        void onGalleryReady(List<GalleryMedia> galleryMedias);
-    }
-
+    private static GalleryHelper mInstance;
     private final String TAG = "[" + this.getClass().getSimpleName() + "]";
-
-    private Context context;
-    private Handler handler;
     private GalleryHelperListener galleryHelperListener;
+    private Context context;
 
-    public GalleryHelper(Context context) {
-        this.context = context;
+    private GalleryHelper() {
     }
 
-    public GalleryHelper(Context context, GalleryHelperListener galleryHelperListener) {
+    public static GalleryHelper getInstance() {
+        if (mInstance == null) {
+            mInstance = new GalleryHelper();
+        }
+        return mInstance;
+    }
+
+    public void onCreate(Context context, GalleryHelperListener galleryHelperListener) {
         this.context = context;
         this.galleryHelperListener = galleryHelperListener;
     }
 
-    public void setGalleryHelperListener(GalleryHelperListener galleryHelperListener) {
-        this.galleryHelperListener = galleryHelperListener;
+    public void onDestroy() {
+        this.context = null;
+        this.galleryHelperListener = null;
     }
 
     public void getGalleryAsync() {
-        new AsyncTask<Void, Void, Void>() {
-            List<GalleryMedia> galleryMedias = new ArrayList<>();
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                // your async action
-                galleryMedias.addAll(getGalleryImages());
-                galleryMedias.addAll(getGalleryVideos());
-                Collections.sort(galleryMedias);
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                if (galleryHelperListener != null) {
-                    galleryHelperListener.onGalleryReady(galleryMedias);
-                }
-            }
-        }.execute();
+        final Observable<List<GalleryMedia>> observable =
+                Observable.create((Observable.OnSubscribe<List<GalleryMedia>>) subscriber -> {
+                    subscriber.onNext(getGallery());
+                    subscriber.onCompleted();
+                }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+        observable.subscribe(this::onGalleryMedia, this::onGalleryError);
     }
 
+    @UiThread
+    private void onGalleryMedia(List<GalleryMedia> galleryMedias) {
+        if (galleryHelperListener != null) {
+            galleryHelperListener.onGalleryReady(galleryMedias);
+        }
+    }
+
+    @UiThread
+    private void onGalleryError(Throwable throwable) {
+        Log.e(TAG, "[onGalleryError]", throwable);
+        if (galleryHelperListener != null) {
+            galleryHelperListener.onGalleryError();
+        }
+    }
+
+    @WorkerThread
+    private List<GalleryMedia> getGallery() {
+        List<GalleryMedia> galleryMedias = new ArrayList<>();
+        galleryMedias.addAll(getGalleryImages());
+        galleryMedias.addAll(getGalleryVideos());
+        Collections.sort(galleryMedias);
+        return galleryMedias;
+    }
+
+    @WorkerThread
     private List<GalleryMedia> getGalleryImages() {
         ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
         try {
@@ -94,6 +110,7 @@ public class GalleryHelper {
         return galleryMedias;
     }
 
+    @WorkerThread
     private List<GalleryMedia> getGalleryVideos() {
         ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
         try {
@@ -124,6 +141,12 @@ public class GalleryHelper {
             Log.e(TAG, "[getGalleryVideos]", e);
         }
         return galleryMedias;
+    }
+
+    public interface GalleryHelperListener {
+        void onGalleryReady(List<GalleryMedia> galleryMedias);
+
+        void onGalleryError();
     }
 }
 

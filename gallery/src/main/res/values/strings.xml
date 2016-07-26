@@ -2,4 +2,5 @@
     <string name="gallery_toolbar_title">Gallery</string>
     <string name="gallery_retry_button">Retry</string>
     <string name="gallery_exception_necessary_permissions">Please, allow the app permissions in settings</string>
+    <string name="gallery_something_went_wrong">Something went wrong, please retry again</string>
 </resources>

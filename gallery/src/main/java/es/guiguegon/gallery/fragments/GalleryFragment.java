@@ -28,10 +28,12 @@ import es.guiguegon.gallery.utils.ScreenUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GalleryFragment extends Fragment implements GalleryAdapter.OnGalleryClickListener, GalleryHelper.GalleryHelperListener {
+public class GalleryFragment extends Fragment
+        implements GalleryAdapter.OnGalleryClickListener, GalleryHelper.GalleryHelperListener {
 
     private static final String KEY_GALLERY_MEDIAS = "key_gallery_medias";
     private final String TAG = "[" + this.getClass().getSimpleName() + "]";
+
     Toolbar toolbar;
     RecyclerView galleryRecyclerView;
     ProgressBar loadingProgressBar;
@@ -54,7 +56,18 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        galleryHelper = GalleryHelper.getInstance();
+        cameraHelper = CameraHelper.getInstance();
+        galleryHelper.onCreate(getContext(), this);
+        cameraHelper.onCreate(getContext());
         return inflater.inflate(R.layout.fragment_gallery, container, false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        galleryHelper.onDestroy();
+        cameraHelper.onDestroy();
     }
 
     @Override
@@ -65,8 +78,6 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
         loadingProgressBar = (ProgressBar) view.findViewById(R.id.loading_progress_bar);
         btnRetry = (Button) view.findViewById(R.id.btn_retry);
         emptyTextview = (TextView) view.findViewById(R.id.empty_textview);
-        cameraHelper = new CameraHelper(getContext());
-        galleryHelper = new GalleryHelper(getContext(), this);
         setupUi();
         if (savedInstanceState == null) {
             init();
@@ -75,8 +86,8 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(KEY_GALLERY_MEDIAS, galleryMedias);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -147,14 +158,11 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
     private void hideEmptyList() {
         galleryRecyclerView.setVisibility(View.VISIBLE);
         emptyTextview.setVisibility(View.GONE);
+        btnRetry.setVisibility(View.GONE);
     }
 
     public void showRetry() {
         btnRetry.setVisibility(View.VISIBLE);
-    }
-
-    public void hideRetry() {
-        btnRetry.setVisibility(View.GONE);
     }
 
     protected void setToolbar(Toolbar toolbar) {
@@ -198,10 +206,11 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
 
     public void getGalleryImages() {
         galleryHelper.getGalleryAsync();
+        showLoading();
     }
 
     public void showError(String message) {
-        //Snackbar.make(getView(), message, Snackbar.LENGTH_LONG).show();
+        hideLoading();
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
@@ -230,6 +239,14 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
 
     @Override
     public void onGalleryReady(List<GalleryMedia> galleryMedias) {
+        hideLoading();
         onGalleryMedia(galleryMedias);
+    }
+
+    @Override
+    public void onGalleryError() {
+        hideLoading();
+        showError(getString(R.string.gallery_something_went_wrong));
+        showRetry();
     }
 }

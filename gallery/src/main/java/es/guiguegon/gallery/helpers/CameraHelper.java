@@ -18,13 +18,28 @@ public class CameraHelper {
     private static final int REQUEST_CODE_CAMERA = 15;
     private static final String MIME_TYPE_IMAGE = "image/jpeg";
     private static final String MIME_TYPE_VIDEO = "video/mp4";
+    private static CameraHelper mInstance;
     private final String TAG = "[" + this.getClass().getSimpleName() + "]";
     private Uri mediaUri;
     private String mimeType;
     private Context context;
 
-    public CameraHelper(Context context) {
+    private CameraHelper() {
+    }
+
+    public static CameraHelper getInstance() {
+        if (mInstance == null) {
+            mInstance = new CameraHelper();
+        }
+        return mInstance;
+    }
+
+    public void onCreate(Context context) {
         this.context = context;
+    }
+
+    public void onDestroy() {
+        this.context = null;
     }
 
     public void dispatchGetPictureIntent(Activity activity) {
@@ -60,13 +75,15 @@ public class CameraHelper {
     }
 
     public GalleryMedia onGetPictureIntentResults(final int requestCode, final int resultCode, final Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            galleryAddPic(mediaUri);
-            return new GalleryMedia().setMediaUri(mediaUri.getPath()).setMimeType(mimeType);
-        } else {
-            FileUtils.deleteFile(context.getContentResolver(), mediaUri);
-            return null;
+        if (requestCode == REQUEST_CODE_CAMERA) {
+            if (resultCode == Activity.RESULT_OK) {
+                galleryAddPic(mediaUri);
+                return new GalleryMedia().setMediaUri(mediaUri.getPath()).setMimeType(mimeType);
+            } else {
+                FileUtils.deleteFile(context.getContentResolver(), mediaUri);
+            }
         }
+        return null;
     }
 
     private void galleryAddPic(Uri mediaUri) {
