@@ -24,7 +24,7 @@ ext {
 
     libraryDescription =
             'Just a simple activity that show all the images and videos in a gallery and allows to select one and retrieve it'
-    libraryVersion = '1.0'
+    libraryVersion = '1.0.1'
 
     developerId = 'guiguegon'
     developerName = 'Guillermo Guerrero González'
@@ -41,7 +41,7 @@ bintray {
         licenses = ["Apache-2.0"]
         publish = true
         version {
-            name = '1.0'
+            name = '1.0.1'
             desc = 'Just a simple activity that show all the images and videos in a gallery and allows to select one and retrieve it'
             vcsUrl = 'https://github.com/guiguegon/GalleryModule.git'
         }
@@ -56,7 +56,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.1"
     }
 
     compileOptions {
