@@ -59,12 +59,6 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Adds a {@link Fragment} to this activity's layout.
-     *
-     * @param containerViewId The container view to where addOrReplace the fragment.
-     * @param fragment The fragment to be added.
-     */
     protected void replaceFragment(int containerViewId, Fragment fragment) {
         FragmentTransaction fragmentTransaction = this.getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(containerViewId, fragment, fragment.getClass().getSimpleName());

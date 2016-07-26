@@ -32,7 +32,6 @@ public class GalleryFragment extends Fragment
         implements GalleryAdapter.OnGalleryClickListener, GalleryHelper.GalleryHelperListener {
 
     private static final String KEY_GALLERY_MEDIAS = "key_gallery_medias";
-    private final String TAG = "[" + this.getClass().getSimpleName() + "]";
 
     Toolbar toolbar;
     RecyclerView galleryRecyclerView;
@@ -112,10 +111,10 @@ public class GalleryFragment extends Fragment
         setToolbar(toolbar);
         int columns = getMaxColumns();
         galleryAdapter = new GalleryAdapter(getContext(), columns);
-        galleryAdapter.setOnGalleryClickListener(this);
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(columns, StaggeredGridLayoutManager.VERTICAL);
         galleryRecyclerView.setLayoutManager(staggeredGridLayoutManager);
         galleryRecyclerView.setAdapter(galleryAdapter);
+        galleryAdapter.setOnGalleryClickListener(this);
         btnRetry.setOnClickListener(this::onButtonRetryClick);
     }
 
@@ -172,9 +171,6 @@ public class GalleryFragment extends Fragment
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.gallery_toolbar_title);
     }
 
-    /**
-     * OnGalleryClickListener interface
-     */
     @Override
     public void onGalleryClick(GalleryMedia galleryMedia) {
         onGalleryMediaSelected(galleryMedia);

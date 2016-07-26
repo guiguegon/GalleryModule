@@ -1,2 +1,2 @@
 # GalleryModule
-Just a simple view that show all the images in gallery and allows to select one or multiple and retrieve it
+Just a simple activity that show all the images and videos in a gallery and allows to select one and retrieve it

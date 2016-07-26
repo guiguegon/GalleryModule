@@ -94,8 +94,8 @@ public class GalleryHelper {
                 int mimeTypeColumIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE);
                 int dateTakenColumIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN);
                 imageCursor.moveToFirst();
-                int videoCount = imageCursor.getCount();
-                for (int i = 0; i < videoCount; i++) {
+                int imageCount = imageCursor.getCount();
+                for (int i = 0; i < imageCount; i++) {
                     galleryMedias.add(new GalleryMedia().setMediaUri(imageCursor.getString(dataColumnIndex))
                             .setId(imageCursor.getLong(idColumnIndex))
                             .setMimeType(imageCursor.getString(mimeTypeColumIndex))
