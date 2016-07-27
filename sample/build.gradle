@@ -6,11 +6,11 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "es.guiguegon.gallery.sample"
+        applicationId "es.guiguegon.gallerymodule.sample"
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
-        versionName "1.0.1"
+        versionName "1.0.2"
     }
 
     compileOptions {
@@ -32,5 +32,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.1.1'
     compile 'com.android.support:design:24.1.1'
 
-    compile project(':gallery')
+    compile project(':gallerymodule')
 }
