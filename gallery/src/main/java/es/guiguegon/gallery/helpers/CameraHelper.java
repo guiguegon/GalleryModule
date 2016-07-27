@@ -79,17 +79,17 @@ public class CameraHelper {
             if (resultCode == Activity.RESULT_OK) {
                 galleryAddPic(mediaUri);
                 return new GalleryMedia().setMediaUri(mediaUri.getPath()).setMimeType(mimeType);
-            } else {
-                FileUtils.deleteFile(context.getContentResolver(), mediaUri);
             }
         }
         return null;
     }
 
     private void galleryAddPic(Uri mediaUri) {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        mediaScanIntent.setData(mediaUri);
-        context.sendBroadcast(mediaScanIntent);
+        if (context != null) {
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            mediaScanIntent.setData(mediaUri);
+            context.sendBroadcast(mediaScanIntent);
+        }
     }
 }
 
