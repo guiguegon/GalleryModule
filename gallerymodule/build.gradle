@@ -4,7 +4,7 @@ apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
 
-def versionLib = '1.0.2'
+def versionLib = '1.1.0'
 
 Properties properties = new Properties()
 if (project.rootProject.file('local.properties').exists()) {
@@ -106,6 +106,13 @@ dependencies {
 if (project.rootProject.file('local.properties').exists()) {
     apply from: 'https://raw.githubusercontent.com/borjabravo10/JCenter/master/installv1.gradle'
     apply from: 'https://raw.githubusercontent.com/borjabravo10/JCenter/master/bintrayv1.gradle'
+}
+
+allprojects {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+    }
 }
 
 bintrayUpload.mustRunAfter install
