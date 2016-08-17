@@ -16,6 +16,7 @@ public class FileUtils {
 
     public static final int MEDIA_TYPE_VIDEO = 1;
     public static final int MEDIA_TYPE_IMAGE = 2;
+    public final static String VIDEO_MIME_TYPE = "video";
     private static final String TAG = "[FileUtils]";
     private final static String MEDIA_FOLDER = Environment.getExternalStorageState();
 

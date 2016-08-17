@@ -4,5 +4,7 @@
     <string name="gallery_retry_button">Retry</string>
     <string name="gallery_exception_necessary_permissions">Please, allow the app permissions in settings</string>
     <string name="gallery_something_went_wrong">Something went wrong, please retry again</string>
-    <string name="action_check">OK</string>
+    <string name="gallery_action_check">OK</string>
+    <string name="gallery_action_camera_photo">Take a photo</string>
+    <string name="gallery_action_camera_video">Record a video</string>
 </resources>

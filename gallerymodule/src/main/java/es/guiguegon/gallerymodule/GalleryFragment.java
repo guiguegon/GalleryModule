@@ -2,6 +2,7 @@ package es.guiguegon.gallerymodule;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,7 +53,7 @@ public class GalleryFragment extends Fragment
     GalleryHelper galleryHelper;
 
     MenuItem checkItem;
-
+    Dialog dialog;
     boolean multiselection;
 
     static GalleryFragment newInstance(boolean multiselection) {
@@ -150,6 +152,15 @@ public class GalleryFragment extends Fragment
         fillGalleryMedia();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
+    }
+
     public int getMaxColumns() {
         int widthRecyclerViewMediaFiles = ScreenUtils.getScreenWidth(getContext());
         int sizeItemsRecyclerView = getResources().getDimensionPixelSize(R.dimen.gallery_item_min_width);
@@ -225,7 +236,22 @@ public class GalleryFragment extends Fragment
     }
 
     public void camera(Activity activity) {
-        cameraHelper.dispatchGetPictureIntent(activity);
+        dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_gallery);
+        Button takePhotoButton = (Button) dialog.findViewById(R.id.gallery_take_photo);
+        takePhotoButton.setOnClickListener(v -> {
+            dialog.dismiss();
+            cameraHelper.dispatchGetPictureIntent(activity);
+            dialog = null;
+        });
+        Button recordVideoButton = (Button) dialog.findViewById(R.id.gallery_record_video);
+        recordVideoButton.setOnClickListener(v -> {
+            dialog.dismiss();
+            cameraHelper.dispatchGetVideoIntent(activity);
+            dialog = null;
+        });
+        dialog.show();
     }
 
     public void getGalleryImages() {
@@ -285,7 +311,7 @@ public class GalleryFragment extends Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_gallery, menu);
-        checkItem = menu.findItem(R.id.action_check);
+        checkItem = menu.findItem(R.id.gallery_action_check);
         handleToolbarState();
     }
 
@@ -303,7 +329,7 @@ public class GalleryFragment extends Fragment
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_check) {
+        if (item.getItemId() == R.id.gallery_action_check) {
             onGalleryMediaSelected(galleryAdapter.getSelectedItems());
             return true;
         }

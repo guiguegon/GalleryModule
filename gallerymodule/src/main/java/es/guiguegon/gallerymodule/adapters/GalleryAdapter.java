@@ -9,10 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import es.guiguegon.gallerymodule.R;
 import es.guiguegon.gallerymodule.model.GalleryMedia;
 import es.guiguegon.gallerymodule.utils.ImageUtils;
 import es.guiguegon.gallerymodule.utils.ScreenUtils;
+import es.guiguegon.gallerymodule.utils.TimeUtils;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,6 +112,13 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
         galleryItemViewHolder.galleryItemSelected.setSelected(isSelected(position));
         Context context = galleryItemViewHolder.itemView.getContext();
         ImageUtils.loadImageFromUri(context, galleryMedia.getMediaUri(), galleryItemViewHolder.galleryItem);
+        if (galleryMedia.isVideo()) {
+            galleryItemViewHolder.galleryItemVideoDuration.setText(
+                    TimeUtils.getTimeFromVideoDuration(galleryMedia.getDuration()));
+            galleryItemViewHolder.galleryItemVideoDuration.setVisibility(View.VISIBLE);
+        } else {
+            galleryItemViewHolder.galleryItemVideoDuration.setVisibility(View.GONE);
+        }
         galleryItemViewHolder.galleryItemLayout.setOnClickListener(v -> {
             if (multiselection) {
                 toggleSelection(position);
@@ -135,11 +144,13 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
         ImageView galleryItem;
         ImageView galleryGradient;
         FrameLayout galleryItemLayout;
+        TextView galleryItemVideoDuration;
 
         public GalleryItemViewHolder(View v) {
             super(v);
             galleryItem = (ImageView) v.findViewById(R.id.gallery_item);
             galleryGradient = (ImageView) v.findViewById(R.id.gallery_gradient);
+            galleryItemVideoDuration = (TextView) v.findViewById(R.id.gallery_video_duration);
             galleryItemLayout = (FrameLayout) v.findViewById(R.id.gallery_item_layout);
             galleryItemSelected = v.findViewById(R.id.gallery_item_selected);
             galleryItem.getLayoutParams().width = itemWidth;

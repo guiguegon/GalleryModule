@@ -126,13 +126,15 @@ public class GalleryHelper {
                 int idColumnIndex = videoCursor.getColumnIndex(MediaStore.Video.Media._ID);
                 int mimeTypeColumIndex = videoCursor.getColumnIndex(MediaStore.Video.Media.MIME_TYPE);
                 int dateTakenColumIndex = videoCursor.getColumnIndex(MediaStore.Video.Media.DATE_TAKEN);
+                int durationColumIndex = videoCursor.getColumnIndex(MediaStore.Video.Media.DURATION);
                 videoCursor.moveToFirst();
                 int videoCount = videoCursor.getCount();
                 for (int i = 0; i < videoCount; i++) {
                     galleryMedias.add(new GalleryMedia().setMediaUri(videoCursor.getString(dataColumnIndex))
                             .setId(videoCursor.getLong(idColumnIndex))
                             .setMimeType(videoCursor.getString(mimeTypeColumIndex))
-                            .setDateTaken(videoCursor.getLong(dateTakenColumIndex)));
+                            .setDateTaken(videoCursor.getLong(dateTakenColumIndex))
+                            .setDuration(videoCursor.getLong(durationColumIndex)));
                     videoCursor.moveToNext();
                 }
                 videoCursor.close();

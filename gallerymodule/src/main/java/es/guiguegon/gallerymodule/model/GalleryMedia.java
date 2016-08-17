@@ -3,6 +3,7 @@ package es.guiguegon.gallerymodule.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import es.guiguegon.gallerymodule.utils.FileUtils;
 
 /**
  * Created by guillermoguerrero on 21/4/16.
@@ -24,7 +25,7 @@ public class GalleryMedia implements Comparable<GalleryMedia>, Parcelable {
     long id;
     String mediaUri;
     String mimeType;
-    int duration;
+    long duration;
     long dateTaken;
 
     public GalleryMedia() {
@@ -66,11 +67,11 @@ public class GalleryMedia implements Comparable<GalleryMedia>, Parcelable {
         return this;
     }
 
-    public int getDuration() {
+    public long getDuration() {
         return duration;
     }
 
-    public GalleryMedia setDuration(int duration) {
+    public GalleryMedia setDuration(long duration) {
         this.duration = duration;
         return this;
     }
@@ -99,7 +100,7 @@ public class GalleryMedia implements Comparable<GalleryMedia>, Parcelable {
         dest.writeLong(id);
         dest.writeString(mediaUri);
         dest.writeString(mimeType);
-        dest.writeInt(duration);
+        dest.writeLong(duration);
         dest.writeLong(dateTaken);
     }
 
@@ -132,8 +133,12 @@ public class GalleryMedia implements Comparable<GalleryMedia>, Parcelable {
         int result = (int) (id ^ (id >>> 32));
         result = 31 * result + (mediaUri != null ? mediaUri.hashCode() : 0);
         result = 31 * result + (mimeType != null ? mimeType.hashCode() : 0);
-        result = 31 * result + duration;
+        result = 31 * result + (int) (duration ^ (duration >>> 32));
         result = 31 * result + (int) (dateTaken ^ (dateTaken >>> 32));
         return result;
+    }
+
+    public boolean isVideo() {
+        return mimeType.contains(FileUtils.VIDEO_MIME_TYPE);
     }
 }

@@ -23,6 +23,19 @@
         android:alpha="0.4"
         android:src="@drawable/bg_gradient_item_gallery"/>
 
+    <TextView
+        android:id="@+id/gallery_video_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="8dp"
+        android:gravity="end"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:visibility="gone"
+        tools:text="01:10"
+        tools:visibility="visible"/>
+
     <View
         android:id="@+id/gallery_item_selected"
         android:layout_width="match_parent"
