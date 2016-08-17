@@ -13,31 +13,31 @@ import es.guiguegon.gallerymodule.R;
 import es.guiguegon.gallerymodule.model.GalleryMedia;
 import es.guiguegon.gallerymodule.utils.ImageUtils;
 import es.guiguegon.gallerymodule.utils.ScreenUtils;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
 
     private final static int VIEW_HOLDER_TYPE_HEADER = 1;
     private final static int VIEW_HOLDER_TYPE_ITEM = 2;
     private final String TAG = "[" + this.getClass().getSimpleName() + "]";
     ArrayList<GalleryMedia> galleryMedias;
-    OnGalleryClickListener onGalleryClickListener;
-    Context context;
+    WeakReference<OnGalleryClickListener> onGalleryClickListenerWeak;
+    boolean multiselection;
     int itemWidth;
 
     public GalleryAdapter(Context context, int columns) {
-        this.context = context;
         galleryMedias = new ArrayList<>();
         itemWidth = ScreenUtils.getScreenWidth(context) / columns;
     }
 
-    public OnGalleryClickListener getOnGalleryClickListener() {
-        return onGalleryClickListener;
+    public void setMultiselection(boolean multiselection) {
+        this.multiselection = multiselection;
     }
 
     public void setOnGalleryClickListener(OnGalleryClickListener onGalleryClickListener) {
-        this.onGalleryClickListener = onGalleryClickListener;
+        this.onGalleryClickListenerWeak = new WeakReference<>(onGalleryClickListener);
     }
 
     public void addGalleryImage(GalleryMedia galleryMedia) {
@@ -48,6 +48,14 @@ public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void addGalleryImage(List<GalleryMedia> galleryMedias) {
         this.galleryMedias.addAll(galleryMedias);
         notifyItemRangeInserted(1, galleryMedias.size());
+    }
+
+    public ArrayList<GalleryMedia> getSelectedItems() {
+        ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
+        for (Integer position : getSelectedItemsPosition()) {
+            galleryMedias.add(this.galleryMedias.get(position - 1));
+        }
+        return galleryMedias;
     }
 
     @Override
@@ -75,7 +83,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 fill((GalleryHeaderViewHolder) viewHolder);
             } else {
                 sglayoutParams.setFullSpan(false);
-                fill((GalleryItemViewHolder) viewHolder, galleryMedias.get(position - 1));
+                fill((GalleryItemViewHolder) viewHolder, galleryMedias.get(position - 1), position);
             }
             viewHolder.itemView.setLayoutParams(sglayoutParams);
         } catch (Exception e) {
@@ -98,14 +106,21 @@ public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return galleryMedias.size() + 1;
     }
 
-    public void fill(GalleryItemViewHolder galleryItemViewHolder, final GalleryMedia galleryMedia) {
+    public void fill(GalleryItemViewHolder galleryItemViewHolder, final GalleryMedia galleryMedia, int position) {
+        galleryItemViewHolder.galleryItemSelected.setSelected(isSelected(position));
+        Context context = galleryItemViewHolder.itemView.getContext();
         ImageUtils.loadImageFromUri(context, galleryMedia.getMediaUri(), galleryItemViewHolder.galleryItem);
-        galleryItemViewHolder.galleryItemLayout.setOnClickListener(
-                v -> onGalleryClickListener.onGalleryClick(galleryMedia));
+        galleryItemViewHolder.galleryItemLayout.setOnClickListener(v -> {
+            if (multiselection) {
+                toggleSelection(position);
+            }
+            onGalleryClickListenerWeak.get().onGalleryClick(galleryMedia);
+        });
     }
 
     public void fill(GalleryHeaderViewHolder galleryHeaderViewHolder) {
-        galleryHeaderViewHolder.galleryCameraLayout.setOnClickListener(v -> onGalleryClickListener.onCameraClick());
+        galleryHeaderViewHolder.galleryCameraLayout.setOnClickListener(
+                v -> onGalleryClickListenerWeak.get().onCameraClick());
     }
 
     public interface OnGalleryClickListener {
@@ -116,6 +131,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     public class GalleryItemViewHolder extends RecyclerView.ViewHolder {
 
+        View galleryItemSelected;
         ImageView galleryItem;
         ImageView galleryGradient;
         FrameLayout galleryItemLayout;
@@ -125,6 +141,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             galleryItem = (ImageView) v.findViewById(R.id.gallery_item);
             galleryGradient = (ImageView) v.findViewById(R.id.gallery_gradient);
             galleryItemLayout = (FrameLayout) v.findViewById(R.id.gallery_item_layout);
+            galleryItemSelected = v.findViewById(R.id.gallery_item_selected);
             galleryItem.getLayoutParams().width = itemWidth;
             galleryGradient.getLayoutParams().width = itemWidth;
         }

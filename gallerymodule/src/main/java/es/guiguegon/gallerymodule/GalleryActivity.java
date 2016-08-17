@@ -9,21 +9,31 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import com.karumi.dexter.Dexter;
-import es.guiguegon.gallerymodule.fragments.GalleryFragment;
 import java.util.List;
 
 public class GalleryActivity extends AppCompatActivity {
 
-    public static final String RESULT_GALLERY_MEDIA = "result_gallery_media";
+    public static final String EXTRA_MULTISELECTION = "extra_multiselection";
+    public static final String RESULT_GALLERY_MEDIA_LIST = "result_gallery_media_list";
+    boolean multiselection;
 
     public static Intent getCallingIntent(Context context) {
         return new Intent(context, GalleryActivity.class);
+    }
+
+    public static Intent getCallingIntent(Context context, boolean multiselection) {
+        Intent intent = new Intent(context, GalleryActivity.class);
+        intent.putExtra(EXTRA_MULTISELECTION, multiselection);
+        return intent;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Dexter.initialize(this);
+        if (savedInstanceState == null) {
+            multiselection = getIntent().getBooleanExtra(EXTRA_MULTISELECTION, false);
+        }
         setContentView(R.layout.activity_gallery);
     }
 
@@ -31,7 +41,7 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         if (savedInstanceState == null) {
-            replaceFragment(R.id.fragment_content, GalleryFragment.newInstance());
+            replaceFragment(R.id.fragment_content, GalleryFragment.newInstance(multiselection));
         }
     }
 

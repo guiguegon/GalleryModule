@@ -19,6 +19,10 @@ public class FileUtils {
     private static final String TAG = "[FileUtils]";
     private final static String MEDIA_FOLDER = Environment.getExternalStorageState();
 
+    private FileUtils() {
+        //empty constructor
+    }
+
     public static File getOutputMediaFile(int type) {
         File mediaStorageDir =
                 new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), MEDIA_FOLDER);

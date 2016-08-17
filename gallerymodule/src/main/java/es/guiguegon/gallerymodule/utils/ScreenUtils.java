@@ -13,6 +13,10 @@ public class ScreenUtils {
 
     private static final String TAG = "[ScreenUtils]";
 
+    private ScreenUtils() {
+        //empty constructor
+    }
+
     public static int getScreenWidth(Context context) {
         try {
             WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);

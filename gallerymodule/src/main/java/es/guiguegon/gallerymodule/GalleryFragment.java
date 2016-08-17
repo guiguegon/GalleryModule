@@ -1,4 +1,4 @@
-package es.guiguegon.gallerymodule.fragments;
+package es.guiguegon.gallerymodule;
 
 import android.Manifest;
 import android.app.Activity;
@@ -11,14 +11,15 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import es.guiguegon.gallerymodule.GalleryActivity;
-import es.guiguegon.gallerymodule.R;
 import es.guiguegon.gallerymodule.adapters.GalleryAdapter;
 import es.guiguegon.gallerymodule.helpers.CameraHelper;
 import es.guiguegon.gallerymodule.helpers.GalleryHelper;
@@ -31,7 +32,9 @@ import java.util.List;
 public class GalleryFragment extends Fragment
         implements GalleryAdapter.OnGalleryClickListener, GalleryHelper.GalleryHelperListener {
 
-    private static final String KEY_GALLERY_MEDIAS = "key_gallery_medias";
+    private static final String ARGUMENT_MULTISELECTION = "argument_multiselection";
+    private static final String KEY_GALLERY_MEDIA = "key_gallery_media";
+    private static final String KEY_SELECTED_POSITION = "key_selected_position";
 
     Toolbar toolbar;
     RecyclerView galleryRecyclerView;
@@ -40,17 +43,32 @@ public class GalleryFragment extends Fragment
     TextView emptyTextview;
 
     ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
+    ArrayList<Integer> selectedPositions = new ArrayList<>();
 
     GalleryAdapter galleryAdapter;
     StaggeredGridLayoutManager staggeredGridLayoutManager;
     CameraHelper cameraHelper;
     GalleryHelper galleryHelper;
 
-    public static GalleryFragment newInstance() {
+    MenuItem checkItem;
+
+    boolean multiselection;
+
+    static GalleryFragment newInstance(boolean multiselection) {
         GalleryFragment fragment = new GalleryFragment();
         Bundle arguments = new Bundle();
+        arguments.putBoolean(ARGUMENT_MULTISELECTION, multiselection);
         fragment.setArguments(arguments);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState == null) {
+            multiselection = getArguments().getBoolean(ARGUMENT_MULTISELECTION, false);
+        }
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -85,7 +103,9 @@ public class GalleryFragment extends Fragment
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList(KEY_GALLERY_MEDIAS, galleryMedias);
+        outState.putParcelableArrayList(KEY_GALLERY_MEDIA, galleryMedias);
+        outState.putIntegerArrayList(KEY_SELECTED_POSITION, galleryAdapter.getSelectedItemsPosition());
+        outState.putBoolean(ARGUMENT_MULTISELECTION, multiselection);
         super.onSaveInstanceState(outState);
     }
 
@@ -93,7 +113,9 @@ public class GalleryFragment extends Fragment
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
-            galleryMedias = savedInstanceState.getParcelableArrayList(KEY_GALLERY_MEDIAS);
+            galleryMedias = savedInstanceState.getParcelableArrayList(KEY_GALLERY_MEDIA);
+            selectedPositions = savedInstanceState.getIntegerArrayList(KEY_SELECTED_POSITION);
+            multiselection = savedInstanceState.getBoolean(ARGUMENT_MULTISELECTION);
             afterConfigChange();
         }
     }
@@ -111,6 +133,7 @@ public class GalleryFragment extends Fragment
         setToolbar(toolbar);
         int columns = getMaxColumns();
         galleryAdapter = new GalleryAdapter(getContext(), columns);
+        galleryAdapter.setMultiselection(multiselection);
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(columns, StaggeredGridLayoutManager.VERTICAL);
         galleryRecyclerView.setLayoutManager(staggeredGridLayoutManager);
         galleryRecyclerView.setAdapter(galleryAdapter);
@@ -123,6 +146,7 @@ public class GalleryFragment extends Fragment
     }
 
     protected void afterConfigChange() {
+        galleryAdapter.setMultiselection(multiselection);
         fillGalleryMedia();
     }
 
@@ -135,6 +159,7 @@ public class GalleryFragment extends Fragment
     private void fillGalleryMedia() {
         if (!galleryMedias.isEmpty()) {
             galleryAdapter.addGalleryImage(galleryMedias);
+            galleryAdapter.setSelectedPositions(selectedPositions);
             hideEmptyList();
         } else {
             showEmptyList();
@@ -168,12 +193,15 @@ public class GalleryFragment extends Fragment
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.gallery_toolbar_title);
     }
 
     @Override
     public void onGalleryClick(GalleryMedia galleryMedia) {
-        onGalleryMediaSelected(galleryMedia);
+        if (multiselection) {
+            handleToolbarState();
+        } else {
+            onGalleryMediaSelected(galleryMedia);
+        }
     }
 
     @Override
@@ -222,11 +250,17 @@ public class GalleryFragment extends Fragment
         hideEmptyList();
     }
 
-    public void onGalleryMediaSelected(GalleryMedia galleryMedia) {
+    public void onGalleryMediaSelected(ArrayList<GalleryMedia> galleryMedias) {
         Intent intent = new Intent();
-        intent.putExtra(GalleryActivity.RESULT_GALLERY_MEDIA, galleryMedia);
+        intent.putParcelableArrayListExtra(GalleryActivity.RESULT_GALLERY_MEDIA_LIST, galleryMedias);
         getActivity().setResult(Activity.RESULT_OK, intent);
         getActivity().supportFinishAfterTransition();
+    }
+
+    public void onGalleryMediaSelected(GalleryMedia galleryMedia) {
+        ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
+        galleryMedias.add(galleryMedia);
+        onGalleryMediaSelected(galleryMedias);
     }
 
     void onButtonRetryClick(View view) {
@@ -244,5 +278,35 @@ public class GalleryFragment extends Fragment
         hideLoading();
         showError(getString(R.string.gallery_something_went_wrong));
         showRetry();
+    }
+
+    /** Menu */
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_gallery, menu);
+        checkItem = menu.findItem(R.id.action_check);
+        handleToolbarState();
+    }
+
+    private void handleToolbarState() {
+        int selectedItemCount = galleryAdapter.getSelectedItemCount();
+        if (selectedItemCount > 0) {
+            checkItem.setVisible(true);
+            toolbar.setTitle(String.format(getString(R.string.gallery_toolbar_title_selected),
+                    String.valueOf(selectedItemCount)));
+        } else {
+            checkItem.setVisible(false);
+            toolbar.setTitle(R.string.gallery_toolbar_title);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_check) {
+            onGalleryMediaSelected(galleryAdapter.getSelectedItems());
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
