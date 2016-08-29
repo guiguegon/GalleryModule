@@ -36,7 +36,7 @@ public class GalleryMedia implements Comparable<GalleryMedia>, Parcelable {
         id = in.readLong();
         mediaUri = in.readString();
         mimeType = in.readString();
-        duration = in.readInt();
+        duration = in.readLong();
         dateTaken = in.readLong();
     }
 
