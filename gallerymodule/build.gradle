@@ -4,7 +4,7 @@ apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
 
-def versionLib = '1.1.0'
+def versionLib = '1.1.1'
 
 Properties properties = new Properties()
 if (project.rootProject.file('local.properties').exists()) {
