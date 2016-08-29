@@ -44,7 +44,7 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
 
     public void addGalleryImage(GalleryMedia galleryMedia) {
         this.galleryMedias.add(0, galleryMedia);
-        notifyItemInserted(1);
+        notifySelectableAdapterItemInserted(1);
     }
 
     public void addGalleryImage(List<GalleryMedia> galleryMedias) {
