@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -70,7 +71,7 @@ public class CameraHelper {
             cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             activity.startActivityForResult(cameraIntent, REQUEST_CODE_CAMERA);
         } catch (Exception e) {
-            Log.e(TAG, "[dispatchGetPictureIntent]", e);
+            Log.e(TAG, "[dispatchGetVideoIntent]", e);
         }
     }
 
@@ -78,10 +79,21 @@ public class CameraHelper {
         if (requestCode == REQUEST_CODE_CAMERA) {
             if (resultCode == Activity.RESULT_OK) {
                 galleryAddPic(mediaUri);
-                return new GalleryMedia().setMediaUri(mediaUri.getPath()).setMimeType(mimeType);
+                GalleryMedia galleryMedia = new GalleryMedia().setMediaUri(mediaUri.getPath()).setMimeType(mimeType);
+                if (MIME_TYPE_VIDEO.equals(mimeType)) {
+                    setGalleryMediaDuration(galleryMedia);
+                }
+                return galleryMedia;
             }
         }
         return null;
+    }
+
+    private void setGalleryMediaDuration(GalleryMedia galleryMedia) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(context, mediaUri);
+        String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        galleryMedia.setDuration(Long.parseLong(time));
     }
 
     private void galleryAddPic(Uri mediaUri) {
