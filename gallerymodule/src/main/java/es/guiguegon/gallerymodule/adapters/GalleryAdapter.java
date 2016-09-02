@@ -14,6 +14,7 @@ import es.guiguegon.gallerymodule.R;
 import es.guiguegon.gallerymodule.model.GalleryMedia;
 import es.guiguegon.gallerymodule.utils.ImageUtils;
 import es.guiguegon.gallerymodule.utils.ScreenUtils;
+import es.guiguegon.gallerymodule.utils.TextureCameraPreview;
 import es.guiguegon.gallerymodule.utils.TimeUtils;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -161,10 +162,12 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
     public class GalleryHeaderViewHolder extends RecyclerView.ViewHolder {
 
         FrameLayout galleryCameraLayout;
+        TextureCameraPreview galleryCameraPreview;
 
         public GalleryHeaderViewHolder(View v) {
             super(v);
             galleryCameraLayout = (FrameLayout) v.findViewById(R.id.gallery_camera_layout);
+            galleryCameraPreview = (TextureCameraPreview) v.findViewById(R.id.gallery_camera_preview);
         }
     }
 }

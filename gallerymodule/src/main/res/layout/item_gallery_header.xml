@@ -8,6 +8,17 @@
     android:clickable="true"
     android:foreground="?android:attr/selectableItemBackground">
 
+    <es.guiguegon.gallerymodule.utils.TextureCameraPreview
+        android:id="@+id/gallery_camera_preview"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gallery_header_height"
+        android:layout_gravity="center"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gallery_camera_preview"/>
+
     <ImageView
         android:id="@+id/gallery_camera"
         android:layout_width="wrap_content"

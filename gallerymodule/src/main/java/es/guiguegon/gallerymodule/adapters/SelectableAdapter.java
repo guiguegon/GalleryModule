@@ -81,9 +81,6 @@ public abstract class SelectableAdapter<VH extends RecyclerView.ViewHolder> exte
         return selectedItems.size();
     }
 
-    /**
-     *
-     */
     protected void notifySelectableAdapterItemInserted(int itemInsertedPosition) {
         List<Integer> selection = getSelectedItemsPosition();
         selectedItems.clear();
@@ -97,9 +94,6 @@ public abstract class SelectableAdapter<VH extends RecyclerView.ViewHolder> exte
         notifyDataSetChanged();
     }
 
-    /**
-     *
-     */
     protected void notifySelectableAdapterItemRemoved(int itemInsertedPosition) {
         List<Integer> selection = getSelectedItemsPosition();
         selectedItems.clear();

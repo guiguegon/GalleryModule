@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="gallery_camera_preview">#cc000000</color>
+    <color name="gallery_item_selected">#cc4477ff</color>
+</resources>

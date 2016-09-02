@@ -9,10 +9,10 @@
         android:fillAlpha="0.01"
         android:pathData="M1,1 L25,1 L25,25 L1,25 L1,1 Z"
         android:strokeAlpha="0.01"
-        android:strokeColor="?colorAccent"
+        android:strokeColor="@color/gallery_item_selected"
         android:strokeWidth="1"/>
     <path
-        android:fillColor="?colorAccent"
+        android:fillColor="@color/gallery_item_selected"
         android:pathData="M10,17.17 L5.83,13 L4.41,14.41 L10,20 L22,8 L20.59,6.59 L10,17.17 Z"
         android:strokeWidth="1"/>
 </vector>

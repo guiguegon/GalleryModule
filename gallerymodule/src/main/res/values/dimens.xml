@@ -2,6 +2,6 @@
 <resources>
     <dimen name="gallery_item_min_width">100dp</dimen>
     <dimen name="gallery_item_height">100dp</dimen>
-    <dimen name="gallery_header_height">100dp</dimen>
+    <dimen name="gallery_header_height">264dp</dimen>
     <dimen name="gallery_stroke_width">3dp</dimen>
 </resources>
