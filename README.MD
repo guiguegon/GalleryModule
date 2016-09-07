@@ -9,7 +9,7 @@ is just that in one library. The user will be prompted to pick one or multiple i
 ## Download
 Add the following dependency to your gradle file
 ```java
-compile 'es.guiguegon:gallerymodule:1.2.0'
+compile 'es.guiguegon:gallerymodule:1.2.1'
 ```
 
 or use JitPack [![](https://jitpack.io/v/guiguegon/GalleryModule.svg)](https://jitpack.io/#guiguegon/GalleryModule)
