@@ -17,12 +17,12 @@
 package es.guiguegon.gallerymodule.utils;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.Surface;
@@ -37,97 +37,15 @@ import java.io.IOException;
 public class TextureCameraPreview extends TextureView implements TextureView.SurfaceTextureListener {
 
     private final String TAG = "[" + this.getClass().getSimpleName() + "]";
+    private final String CAMERA_THREAD = "camera_thread";
     private Camera mCamera;
+    private HandlerThread cameraThread;
+    private Handler cameraHandler;
+    private Handler mainHandler;
 
     public TextureCameraPreview(Context context, AttributeSet attrs) {
         super(context, attrs, 0);
         setSurfaceTextureListener(this);
-    }
-
-    public static Bitmap ice(Bitmap bmp) {
-        int width = bmp.getWidth();
-        int height = bmp.getHeight();
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-        int dst[] = new int[width * height];
-        bmp.getPixels(dst, 0, width, 0, 0, width, height);
-        int R, G, B, pixel;
-        int pos, pixColor;
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                pos = y * width + x;
-                pixColor = dst[pos]; // Gets the current value for the pixel.
-                R = Color.red(pixColor); // Gets the RGB tricolor
-                G = Color.green(pixColor);
-                B = Color.blue(pixColor);
-                pixel = R - G - B;
-                pixel = pixel * 3 / 2;
-                if (pixel < 0) {
-                    pixel = -pixel;
-                }
-                if (pixel > 255) {
-                    pixel = 255;
-                }
-                R = pixel; // Reset the R value calculation, the same below
-                pixel = G - B - R;
-                pixel = pixel * 3 / 2;
-                if (pixel < 0) {
-                    pixel = -pixel;
-                }
-                if (pixel > 255) {
-                    pixel = 255;
-                }
-                G = pixel;
-                pixel = B - R - G;
-                pixel = pixel * 3 / 2;
-                if (pixel < 0) {
-                    pixel = -pixel;
-                }
-                if (pixel > 255) {
-                    pixel = 255;
-                }
-                B = pixel;
-                dst[pos] = Color.rgb(R, G, B); // Pixel reset the current point value
-            } // x
-        } // y
-        bitmap.setPixels(dst, 0, width, 0, 0, width, height);
-        return bitmap;
-    }
-
-    static public void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height) {
-        final int frameSize = width * height;
-        for (int j = 0, yp = 0; j < height; j++) {
-            int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
-            for (int i = 0; i < width; i++, yp++) {
-                int y = (0xff & ((int) yuv420sp[yp])) - 16;
-                if (y < 0) {
-                    y = 0;
-                }
-                if ((i & 1) == 0) {
-                    v = (0xff & yuv420sp[uvp++]) - 128;
-                    u = (0xff & yuv420sp[uvp++]) - 128;
-                }
-                int y1192 = 1192 * y;
-                int r = (y1192 + 1634 * v);
-                int g = (y1192 - 833 * v - 400 * u);
-                int b = (y1192 + 2066 * u);
-                if (r < 0) {
-                    r = 0;
-                } else if (r > 262143) {
-                    r = 262143;
-                }
-                if (g < 0) {
-                    g = 0;
-                } else if (g > 262143) {
-                    g = 262143;
-                }
-                if (b < 0) {
-                    b = 0;
-                } else if (b > 262143) {
-                    b = 262143;
-                }
-                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
-            }
-        }
     }
 
     @Override
@@ -140,21 +58,37 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture arg0, int arg1, int arg2) {
-        Log.i(TAG, "[onSurfaceTextureAvailable]");
-        mCamera = Camera.open();
-        setCameraParameters();
-        try {
-            mCamera.setPreviewTexture(arg0);
-        } catch (IOException t) {
+        if (cameraThread == null) {
+            initCameraThread();
         }
-        mCamera.startPreview();
+        cameraHandler.post(() -> {
+            mCamera = Camera.open();
+            mainHandler.postDelayed(() -> {
+                try {
+                    setCameraParameters();
+                    mCamera.setPreviewTexture(arg0);
+                    mCamera.startPreview();
+                } catch (IOException t) {
+                    t.printStackTrace();
+                }
+            }, 500);
+        });
+    }
+
+    private void initCameraThread() {
+        cameraThread = new HandlerThread(CAMERA_THREAD);
+        cameraThread.start();
+        cameraHandler = new Handler(cameraThread.getLooper());
+        mainHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture arg0) {
-        Log.i(TAG, "[onSurfaceTextureDestroyed]");
-        mCamera.stopPreview();
-        mCamera.release();
+        mainHandler.removeCallbacksAndMessages(null);
+        cameraHandler.post(() -> {
+            mCamera.stopPreview();
+            mCamera.release();
+        });
         return true;
     }
 
