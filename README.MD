@@ -5,6 +5,8 @@
 Have you ever faced the need of build a gallery for your users to pick a image? or to take a new photo to use it as avatar? GalleryModule
 is just that in one library. The user will be prompted to pick one or multiple images from the device and also take new photos or videos
 
+## Web
+See GalleryModule post series in my [blog](http://guiguegon.es/blog/)
 
 ## Download
 Add the following dependency to your gradle file
@@ -18,19 +20,19 @@ or use JitPack [![](https://jitpack.io/v/guiguegon/GalleryModule.svg)](https://j
 The minimum API is 15.
 
 ```java
-    public void openGallery(boolean multiselection) {
-        startActivityForResult(GalleryActivity.getCallingIntent(this, multiselection), REQUEST_CODE_GALLERY);
-    }
+public void openGallery(boolean multiselection) {
+    startActivityForResult(GalleryActivity.getCallingIntent(this, multiselection), REQUEST_CODE_GALLERY);
+}
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_GALLERY && resultCode == RESULT_OK) {
-            List<GalleryMedia> galleryMedias =
-                    data.getParcelableArrayListExtra(GalleryActivity.RESULT_GALLERY_MEDIA_LIST);
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == REQUEST_CODE_GALLERY && resultCode == RESULT_OK) {
+        List<GalleryMedia> galleryMedias =
+                data.getParcelableArrayListExtra(GalleryActivity.RESULT_GALLERY_MEDIA_LIST);
 
-        }
     }
+}
 ```
 
 Just start GalleryActivity with the parameter *multiselection* to allow selection of one or more images. The results are returned
