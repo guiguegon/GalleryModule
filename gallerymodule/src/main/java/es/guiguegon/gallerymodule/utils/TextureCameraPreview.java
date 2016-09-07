@@ -16,6 +16,7 @@
 
 package es.guiguegon.gallerymodule.utils;
 
+import android.Manifest;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -27,8 +28,10 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import es.guiguegon.gallerymodule.helpers.PermissionsManager;
 import java.util.List;
 
 /**
@@ -44,6 +47,7 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
     private HandlerThread cameraThread;
     private Handler cameraHandler;
     private Handler mainHandler;
+    private SurfaceTexture surfaceTexture;
 
     public TextureCameraPreview(Context context, AttributeSet attrs) {
         super(context, attrs, 0);
@@ -61,14 +65,28 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture arg0, int arg1, int arg2) {
+        this.surfaceTexture = arg0;
         if (cameraThread == null) {
             initCameraThread();
         }
+        checkPermission();
+    }
+
+    private void checkPermission() {
+        try {
+            PermissionsManager.requestMultiplePermissions((ViewGroup) getParent(), this::initCamera,
+                    Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        } catch (Exception e) {
+            //empty
+        }
+    }
+
+    private void initCamera() {
         cameraHandler.post(() -> {
             getCameraInstance();
             try {
                 if (mCamera != null) {
-                    mCamera.setPreviewTexture(arg0);
+                    mCamera.setPreviewTexture(surfaceTexture);
                     mCamera.startPreview();
                     mainHandler.removeCallbacksAndMessages(null);
                     mainHandler.postDelayed(this::setCameraParameters, 500);
@@ -96,13 +114,16 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture arg0) {
+        surfaceTexture = null;
         mainHandler.removeCallbacksAndMessages(null);
         cameraHandler.post(() -> {
             try {
-                mCamera.stopPreview();
-                mCamera.setPreviewCallback(null);
-                mCamera.release();
-                mCamera = null;
+                if (mCamera != null) {
+                    mCamera.stopPreview();
+                    mCamera.setPreviewCallback(null);
+                    mCamera.release();
+                    mCamera = null;
+                }
             } catch (Throwable t) {
                 //empty
             }
