@@ -4,7 +4,8 @@ apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
 
-def versionLib = '1.2.0'
+def versionLibCode = 1
+def versionLibName = '1.2.0'
 
 Properties properties = new Properties()
 if (project.rootProject.file('local.properties').exists()) {
@@ -26,7 +27,7 @@ ext {
 
     libraryDescription =
             'Just a simple activity that show all the images and videos in a gallery and allows to select one and retrieve it'
-    libraryVersion = versionLib
+    libraryVersion = versionLibName
 
     developerId = 'guiguegon'
     developerName = 'Guillermo Guerrero González'
@@ -43,7 +44,7 @@ bintray {
         licenses = ["Apache-2.0"]
         publish = true
         version {
-            name = versionLib
+            name = versionLibName
             desc = 'Just a simple activity that show all the images and videos in a gallery and allows to select one and retrieve it'
             vcsUrl = 'https://github.com/guiguegon/gallerymodule.git'
         }
@@ -52,13 +53,13 @@ bintray {
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    buildToolsVersion "24.0.1"
 
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 1
-        versionName versionLib
+        versionCode versionLibCode
+        versionName versionLibName
     }
 
     compileOptions {
@@ -85,7 +86,7 @@ android {
 }
 
 dependencies {
-    final SUPPORT_LIBRARY_VERSION = '24.1.1'
+    final SUPPORT_LIBRARY_VERSION = '24.2.0'
 
     compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
     compile "com.android.support:recyclerview-v7:$SUPPORT_LIBRARY_VERSION"
