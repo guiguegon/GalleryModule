@@ -29,15 +29,17 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import java.io.IOException;
+import java.util.List;
 
 /**
  * A {@link TextureView} that can be adjusted to a specified aspect ratio.
  */
 public class TextureCameraPreview extends TextureView implements TextureView.SurfaceTextureListener {
 
-    private final String TAG = "[" + this.getClass().getSimpleName() + "]";
-    private final String CAMERA_THREAD = "camera_thread";
+    private static final String CAMERA_THREAD = "camera_thread";
+
+    private static final String TAG = "[" + TextureCameraPreview.class.getSimpleName() + "]";
+
     private Camera mCamera;
     private HandlerThread cameraThread;
     private Handler cameraHandler;
@@ -54,6 +56,7 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
         setMeasuredDimension(width, height);
+        setCameraRotation();
     }
 
     @Override
@@ -62,17 +65,26 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
             initCameraThread();
         }
         cameraHandler.post(() -> {
-            mCamera = Camera.open();
-            mainHandler.postDelayed(() -> {
-                try {
-                    setCameraParameters();
+            getCameraInstance();
+            try {
+                if (mCamera != null) {
                     mCamera.setPreviewTexture(arg0);
                     mCamera.startPreview();
-                } catch (IOException t) {
-                    t.printStackTrace();
+                    mainHandler.removeCallbacksAndMessages(null);
+                    mainHandler.postDelayed(this::setCameraParameters, 500);
                 }
-            }, 500);
+            } catch (Throwable t) {
+                //empty
+            }
         });
+    }
+
+    private void getCameraInstance() {
+        try {
+            mCamera = Camera.open();
+        } catch (Exception e) {
+            //empty
+        }
     }
 
     private void initCameraThread() {
@@ -86,8 +98,14 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
     public boolean onSurfaceTextureDestroyed(SurfaceTexture arg0) {
         mainHandler.removeCallbacksAndMessages(null);
         cameraHandler.post(() -> {
-            mCamera.stopPreview();
-            mCamera.release();
+            try {
+                mCamera.stopPreview();
+                mCamera.setPreviewCallback(null);
+                mCamera.release();
+                mCamera = null;
+            } catch (Throwable t) {
+                //empty
+            }
         });
         return true;
     }
@@ -103,8 +121,18 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
     }
 
     private void setCameraParameters() {
-        Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
-        setLayoutParams(new FrameLayout.LayoutParams(previewSize.width, previewSize.height, Gravity.CENTER));
+        setCameraPreviewSize();
+        setContinuousFocus();
+    }
+
+    private void setCameraPreviewSize() {
+        if (mCamera != null) {
+            Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
+            setLayoutParams(new FrameLayout.LayoutParams(previewSize.width, previewSize.height, Gravity.CENTER));
+        }
+    }
+
+    private void setCameraRotation() {
         android.hardware.Camera.CameraInfo camInfo = new android.hardware.Camera.CameraInfo();
         android.hardware.Camera.getCameraInfo(getBackFacingCameraId(), camInfo);
         Display display = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
@@ -126,35 +154,18 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
         }
         int result = (camInfo.orientation - degrees + 360) % 360;
         setRotation(result);
-        // /* Set Auto focus */
-        //Camera.Parameters parameters = mCamera.getParameters();
-        //List<String> focusModes = parameters.getSupportedFocusModes();
-        //if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-        //    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        //}
-        //mCamera.setParameters(parameters);
-        //
-        //        mCamera.setPreviewCallback(new Camera.PreviewCallback() {
-        //            @Override
-        //            public void onPreviewFrame(byte[] data, Camera camera) {
-        //                if (data != null) {
-        //                    int imageWidth = camera.getParameters().getPreviewSize().width;
-        //                    int imageHeight = camera.getParameters().getPreviewSize().height;
-        //                    int RGBData[] = new int[imageWidth * imageHeight];
-        //                    decodeYUV420SP(RGBData, data, imageWidth, imageHeight); //Decode
-        //                    Bitmap bm = Bitmap.createBitmap(RGBData, imageWidth, imageHeight, Bitmap.Config.ARGB_8888);
-        ////                                bm = toGrayscale(bm);//The real-time filter effects, is now become black and white
-        //                    bm = ice(bm);//Freezing effect
-        //                    Canvas canvas = lockCanvas();
-        //                    // Non null, to drawBitmap.
-        //                    if (bm != null) {
-        //                        bm = Bitmap.createScaledBitmap(bm, getWidth(), getHeight(),false);
-        //                        canvas.drawBitmap(bm, 0, 0, null);
-        //                    }
-        //                    unlockCanvasAndPost(canvas);
-        //                }
-        //            }
-        //        });
+    }
+
+    private void setContinuousFocus() {
+         /* Set Auto focus */
+        if (mCamera != null) {
+            Camera.Parameters parameters = mCamera.getParameters();
+            List<String> focusModes = parameters.getSupportedFocusModes();
+            if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+            }
+            mCamera.setParameters(parameters);
+        }
     }
 
     private int getBackFacingCameraId() {
