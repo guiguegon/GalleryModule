@@ -7,9 +7,12 @@ import android.content.Intent;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
+import es.guiguegon.gallerymodule.BuildConfig;
 import es.guiguegon.gallerymodule.model.GalleryMedia;
 import es.guiguegon.gallerymodule.utils.FileUtils;
+import java.io.File;
 
 /**
  * Created by guiguegon on 23/10/2015.
@@ -22,6 +25,7 @@ public class CameraHelper {
     private static CameraHelper mInstance;
     private final String TAG = "[" + this.getClass().getSimpleName() + "]";
     private Uri mediaUri;
+    private String mediaPath;
     private String mimeType;
     private Context context;
 
@@ -50,7 +54,9 @@ public class CameraHelper {
             ContentValues values = new ContentValues(1);
             mimeType = MIME_TYPE_IMAGE;
             values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
-            mediaUri = Uri.fromFile(FileUtils.getOutputMediaFile(FileUtils.MEDIA_TYPE_IMAGE));
+            File file = FileUtils.getOutputMediaFile(FileUtils.MEDIA_TYPE_IMAGE);
+            mediaPath = file != null ? file.getAbsolutePath() : null;
+            mediaUri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, mediaUri);
             cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             activity.startActivityForResult(cameraIntent, REQUEST_CODE_CAMERA);
@@ -66,7 +72,9 @@ public class CameraHelper {
             ContentValues values = new ContentValues(1);
             mimeType = MIME_TYPE_VIDEO;
             values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
-            mediaUri = Uri.fromFile(FileUtils.getOutputMediaFile(FileUtils.MEDIA_TYPE_VIDEO));
+            File file = FileUtils.getOutputMediaFile(FileUtils.MEDIA_TYPE_VIDEO);
+            mediaPath = file != null ? file.getAbsolutePath() : null;
+            mediaUri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, mediaUri);
             cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             activity.startActivityForResult(cameraIntent, REQUEST_CODE_CAMERA);
@@ -78,8 +86,8 @@ public class CameraHelper {
     public GalleryMedia onGetPictureIntentResults(final int requestCode, final int resultCode, final Intent data) {
         if (requestCode == REQUEST_CODE_CAMERA) {
             if (resultCode == Activity.RESULT_OK) {
-                galleryAddPic(mediaUri);
-                GalleryMedia galleryMedia = new GalleryMedia().setMediaUri(mediaUri.getPath()).setMimeType(mimeType);
+                galleryAddPic();
+                GalleryMedia galleryMedia = new GalleryMedia().setMediaUri(mediaPath).setMimeType(mimeType);
                 if (MIME_TYPE_VIDEO.equals(mimeType)) {
                     setGalleryMediaDuration(galleryMedia);
                 }
@@ -96,10 +104,10 @@ public class CameraHelper {
         galleryMedia.setDuration(Long.parseLong(time));
     }
 
-    private void galleryAddPic(Uri mediaUri) {
+    private void galleryAddPic() {
         if (context != null) {
             Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            mediaScanIntent.setData(mediaUri);
+            mediaScanIntent.setData(Uri.fromFile(new File(mediaPath)));
             context.sendBroadcast(mediaScanIntent);
         }
     }

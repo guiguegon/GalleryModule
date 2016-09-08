@@ -18,7 +18,7 @@ public class FileUtils {
     public static final int MEDIA_TYPE_IMAGE = 2;
     public final static String VIDEO_MIME_TYPE = "video";
     private static final String TAG = "[FileUtils]";
-    private final static String MEDIA_FOLDER = Environment.getExternalStorageState();
+    private final static String MEDIA_FOLDER = "";
 
     private FileUtils() {
         //empty constructor
@@ -35,7 +35,7 @@ public class FileUtils {
         File mediaFile;
         switch (type) {
             case MEDIA_TYPE_IMAGE:
-                mediaFile = new File(mediaStorageDir.getPath() + File.separator + "VID_" + timeStamp + ".jpeg");
+                mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpeg");
                 break;
             case MEDIA_TYPE_VIDEO:
                 mediaFile = new File(mediaStorageDir.getPath() + File.separator + "VID_" + timeStamp + ".mp4");
