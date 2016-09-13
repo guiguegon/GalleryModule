@@ -89,6 +89,7 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
                     mCamera.setPreviewTexture(surfaceTexture);
                     mCamera.startPreview();
                     mainHandler.removeCallbacksAndMessages(null);
+                    cameraHandler.removeCallbacksAndMessages(null);
                     mainHandler.postDelayed(this::setCameraParameters, 500);
                 }
             } catch (Throwable t) {
@@ -116,7 +117,8 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
     public boolean onSurfaceTextureDestroyed(SurfaceTexture arg0) {
         surfaceTexture = null;
         mainHandler.removeCallbacksAndMessages(null);
-        cameraHandler.post(() -> {
+        cameraHandler.removeCallbacksAndMessages(null);
+        cameraHandler.postDelayed(() -> {
             try {
                 if (mCamera != null) {
                     mCamera.stopPreview();
@@ -127,7 +129,7 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
             } catch (Throwable t) {
                 //empty
             }
-        });
+        }, 500);
         return true;
     }
 
@@ -147,7 +149,7 @@ public class TextureCameraPreview extends TextureView implements TextureView.Sur
     }
 
     private void setCameraPreviewSize() {
-        if (mCamera != null) {
+        if (mCamera != null && mCamera.getParameters() != null) {
             Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
             setLayoutParams(new FrameLayout.LayoutParams(previewSize.width, previewSize.height, Gravity.CENTER));
         }
