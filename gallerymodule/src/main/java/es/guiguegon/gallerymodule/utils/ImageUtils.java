@@ -16,9 +16,9 @@ public class ImageUtils {
         //empty contructor
     }
 
-    public static void loadImageFromUri(Context context, String imageUri, ImageView imageView) {
+    public static void loadImageFromUri(Context context, String imageUri, ImageView imageView, int width, int height) {
         try {
-            Glide.with(context.getApplicationContext()).load(imageUri).into(imageView);
+            Glide.with(context).load(imageUri).override(width, height).into(imageView);
         } catch (Exception e) {
             Log.e(TAG, "[loadImageFromUri]", e);
         }

@@ -29,10 +29,12 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
     WeakReference<OnGalleryClickListener> onGalleryClickListenerWeak;
     boolean multiselection;
     int itemWidth;
+    int itemHeight;
 
     public GalleryAdapter(Context context, int columns) {
         galleryMedias = new ArrayList<>();
         itemWidth = ScreenUtils.getScreenWidth(context) / columns;
+        itemHeight = context.getResources().getDimensionPixelSize(R.dimen.gallery_item_height);
     }
 
     public void setMultiselection(boolean multiselection) {
@@ -112,7 +114,8 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
     public void fill(GalleryItemViewHolder galleryItemViewHolder, final GalleryMedia galleryMedia, int position) {
         galleryItemViewHolder.galleryItemSelected.setSelected(isSelected(position));
         Context context = galleryItemViewHolder.itemView.getContext();
-        ImageUtils.loadImageFromUri(context, galleryMedia.getMediaUri(), galleryItemViewHolder.galleryItem);
+        ImageUtils.loadImageFromUri(context, galleryMedia.getMediaUri(), galleryItemViewHolder.galleryItem, itemWidth,
+                itemHeight);
         if (galleryMedia.isVideo()) {
             galleryItemViewHolder.galleryItemVideoDuration.setText(
                     TimeUtils.getTimeFromVideoDuration(galleryMedia.getDuration()));
