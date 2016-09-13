@@ -11,7 +11,7 @@ See GalleryModule post series in my [blog](http://guiguegon.es/blog/)
 ## Download
 Add the following dependency to your gradle file
 ```java
-compile 'es.guiguegon:gallerymodule:1.2.3'
+compile 'es.guiguegon:gallerymodule:1.2.4'
 ```
 
 or use JitPack [![](https://jitpack.io/v/guiguegon/GalleryModule.svg)](https://jitpack.io/#guiguegon/GalleryModule)

@@ -5,7 +5,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
 
 def versionLibCode = 2
-def versionLibName = '1.2.3'
+def versionLibName = '1.2.4'
 
 Properties properties = new Properties()
 if (project.rootProject.file('local.properties').exists()) {
