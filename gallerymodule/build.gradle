@@ -53,7 +53,7 @@ bintray {
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "24.0.2"
 
     defaultConfig {
         minSdkVersion 15
@@ -86,7 +86,7 @@ android {
 }
 
 dependencies {
-    final SUPPORT_LIBRARY_VERSION = '24.2.0'
+    final SUPPORT_LIBRARY_VERSION = '24.2.1'
 
     compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
     compile "com.android.support:recyclerview-v7:$SUPPORT_LIBRARY_VERSION"
