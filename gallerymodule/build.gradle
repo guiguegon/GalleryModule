@@ -87,9 +87,14 @@ android {
 
 dependencies {
     final SUPPORT_LIBRARY_VERSION = '24.2.1'
+    final AUTOVALUE_VERSION = '1.2'
 
     compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
     compile "com.android.support:recyclerview-v7:$SUPPORT_LIBRARY_VERSION"
+
+    compile "com.google.auto.value:auto-value:$AUTOVALUE_VERSION"
+    apt "com.google.auto.value:auto-value:$AUTOVALUE_VERSION"
+    apt 'com.ryanharter.auto.value:auto-value-parcel:0.2.4-rc2'
 
     //Dexter (permissions)
     compile 'com.karumi:dexter:2.3.0'

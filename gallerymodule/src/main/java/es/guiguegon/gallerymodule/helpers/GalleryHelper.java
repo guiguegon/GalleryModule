@@ -104,11 +104,10 @@ public class GalleryHelper {
                 imageCursor.moveToFirst();
                 int imageCount = imageCursor.getCount();
                 for (int i = 0; i < imageCount; i++) {
-                    galleryMedias.add(
-                            new GalleryMedia().setMediaUri(imageCursor.getString(dataColumnIndex))
-                                    .setId(imageCursor.getLong(idColumnIndex))
-                                    .setMimeType(imageCursor.getString(mimeTypeColumIndex))
-                                    .setDateTaken(imageCursor.getLong(dateTakenColumIndex)));
+                    galleryMedias.add(GalleryMedia.create(imageCursor.getLong(idColumnIndex),
+                            imageCursor.getString(dataColumnIndex),
+                            imageCursor.getString(mimeTypeColumIndex), 0,
+                            imageCursor.getLong(dateTakenColumIndex)));
                     imageCursor.moveToNext();
                 }
                 imageCursor.close();
@@ -144,12 +143,11 @@ public class GalleryHelper {
                 videoCursor.moveToFirst();
                 int videoCount = videoCursor.getCount();
                 for (int i = 0; i < videoCount; i++) {
-                    galleryMedias.add(
-                            new GalleryMedia().setMediaUri(videoCursor.getString(dataColumnIndex))
-                                    .setId(videoCursor.getLong(idColumnIndex))
-                                    .setMimeType(videoCursor.getString(mimeTypeColumIndex))
-                                    .setDateTaken(videoCursor.getLong(dateTakenColumIndex))
-                                    .setDuration(videoCursor.getLong(durationColumIndex)));
+                    galleryMedias.add(GalleryMedia.create(videoCursor.getLong(idColumnIndex),
+                            videoCursor.getString(dataColumnIndex),
+                            videoCursor.getString(mimeTypeColumIndex),
+                            videoCursor.getLong(durationColumIndex),
+                            videoCursor.getLong(dateTakenColumIndex)));
                     videoCursor.moveToNext();
                 }
                 videoCursor.close();

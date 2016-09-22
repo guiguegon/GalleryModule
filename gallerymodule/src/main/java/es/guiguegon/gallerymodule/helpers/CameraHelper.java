@@ -87,21 +87,22 @@ public class CameraHelper {
         if (requestCode == REQUEST_CODE_CAMERA) {
             if (resultCode == Activity.RESULT_OK) {
                 galleryAddPic();
-                GalleryMedia galleryMedia = new GalleryMedia().setMediaUri(mediaPath).setMimeType(mimeType);
+                long duration = 0;
                 if (MIME_TYPE_VIDEO.equals(mimeType)) {
-                    setGalleryMediaDuration(galleryMedia);
+                    duration = getGalleryMediaDuration();
                 }
-                return galleryMedia;
+                return GalleryMedia.create(0, mediaPath, mimeType, duration, 0);
             }
         }
         return null;
     }
 
-    private void setGalleryMediaDuration(GalleryMedia galleryMedia) {
+    private long getGalleryMediaDuration() {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(context, mediaUri);
-        String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        galleryMedia.setDuration(Long.parseLong(time));
+        return Long.valueOf(
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+
     }
 
     private void galleryAddPic() {

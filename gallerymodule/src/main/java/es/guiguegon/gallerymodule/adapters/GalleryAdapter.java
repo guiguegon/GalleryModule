@@ -119,11 +119,12 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
     public void fill(GalleryItemViewHolder galleryItemViewHolder, final GalleryMedia galleryMedia, int position) {
         galleryItemViewHolder.galleryItemSelected.setSelected(isSelected(position));
         Context context = galleryItemViewHolder.itemView.getContext();
-        ImageUtils.loadImageFromUri(context, galleryMedia.getMediaUri(), galleryItemViewHolder.galleryItem, itemWidth,
+        ImageUtils.loadImageFromUri(context, galleryMedia.mediaUri(),
+                galleryItemViewHolder.galleryItem, itemWidth,
                 itemHeight);
         if (galleryMedia.isVideo()) {
             galleryItemViewHolder.galleryItemVideoDuration.setText(
-                    TimeUtils.getTimeFromVideoDuration(galleryMedia.getDuration()));
+                    TimeUtils.getTimeFromVideoDuration(galleryMedia.duration()));
             galleryItemViewHolder.galleryItemVideoDuration.setVisibility(View.VISIBLE);
         } else {
             galleryItemViewHolder.galleryItemVideoDuration.setVisibility(View.GONE);
