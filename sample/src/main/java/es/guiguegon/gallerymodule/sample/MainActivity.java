@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 import es.guiguegon.gallerymodule.GalleryActivity;
 import es.guiguegon.gallerymodule.GalleryHelper;
@@ -20,12 +21,14 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE_GALLERY = 1;
 
-    AlertDialog alertDialog;
+    private AlertDialog alertDialog;
+    private Switch showVideosSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        showVideosSwitch = (Switch) findViewById(R.id.switch_show_videos);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -36,8 +39,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setMessage("Select Gallery mode");
         dialog.setPositiveButton("Single", (dialogInterface, id) -> {
-            startActivityForResult(new GalleryHelper().setMultiselection(false)
-                    .getCallingIntent(this), REQUEST_CODE_GALLERY);
+            openGallerySingleSelection();
         });
         dialog.setNegativeButton("Multiple", (dialogInterface, id) -> {
             showMaxElementsDialog(view);
@@ -54,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             EditText editText = (EditText) dialogView.findViewById(R.id.max_number_edit_text);
             String maxSelectedItems = editText.getText()
                     .toString();
-            openGalleryMultiselection(TextUtils.isEmpty(maxSelectedItems) ? Integer.MAX_VALUE
+            openGalleryMultiplSelection(TextUtils.isEmpty(maxSelectedItems) ? Integer.MAX_VALUE
                     : Integer.valueOf(maxSelectedItems));
             alertDialog.dismiss();
         });
@@ -62,9 +64,15 @@ public class MainActivity extends AppCompatActivity {
         alertDialog = dialog.show();
     }
 
-    private void openGalleryMultiselection(int maxSelectedItems) {
+    private void openGallerySingleSelection() {
+        startActivityForResult(new GalleryHelper().setShowVideos(showVideosSwitch.isChecked())
+                .getCallingIntent(this), REQUEST_CODE_GALLERY);
+    }
+
+    private void openGalleryMultiplSelection(int maxSelectedItems) {
         startActivityForResult(new GalleryHelper().setMultiselection(true)
                 .setMaxSelectedItems(maxSelectedItems)
+                .setShowVideos(showVideosSwitch.isChecked())
                 .getCallingIntent(this), REQUEST_CODE_GALLERY);
     }
 

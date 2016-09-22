@@ -35,41 +35,37 @@ public class GalleryFragment extends Fragment
         implements GalleryAdapter.OnGalleryClickListener, GalleryHelper.GalleryHelperListener {
 
     private static final String ARGUMENT_MULTISELECTION = "argument_multiselection";
+    private static final String ARGUMENT_SHOW_VIDEOS = "argument_show_videos";
     private static final String ARGUMENT_MAX_SELECTED_ITEMS = "argument_max_selected_items";
     private static final String KEY_GALLERY_MEDIA = "key_gallery_media";
     private static final String KEY_SELECTED_POSITION = "key_selected_position";
 
-    Toolbar toolbar;
-    RecyclerView galleryRecyclerView;
-    ProgressBar loadingProgressBar;
-    Button btnRetry;
-    TextView emptyTextview;
+    private Toolbar toolbar;
+    private RecyclerView galleryRecyclerView;
+    private ProgressBar loadingProgressBar;
+    private Button btnRetry;
+    private TextView emptyTextview;
 
-    ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
-    ArrayList<Integer> selectedPositions = new ArrayList<>();
+    private ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
+    private ArrayList<Integer> selectedPositions = new ArrayList<>();
 
-    GalleryAdapter galleryAdapter;
-    StaggeredGridLayoutManager staggeredGridLayoutManager;
-    CameraHelper cameraHelper;
-    GalleryHelper galleryHelper;
+    private GalleryAdapter galleryAdapter;
+    private StaggeredGridLayoutManager staggeredGridLayoutManager;
+    private CameraHelper cameraHelper;
+    private GalleryHelper galleryHelper;
 
-    MenuItem checkItem;
-    Dialog dialog;
-    boolean multiselection;
-    int maxSelectedItems;
+    private MenuItem checkItem;
+    private Dialog dialog;
+    private boolean multiselection;
+    private boolean showVideos;
+    private int maxSelectedItems;
 
-    static GalleryFragment newInstance(boolean multiselection) {
+    static GalleryFragment newInstance(boolean multiselection, int maxSelectedItems,
+            boolean showVideos) {
         GalleryFragment fragment = new GalleryFragment();
         Bundle arguments = new Bundle();
         arguments.putBoolean(ARGUMENT_MULTISELECTION, multiselection);
-        fragment.setArguments(arguments);
-        return fragment;
-    }
-
-    static GalleryFragment newInstance(boolean multiselection, int maxSelectedItems) {
-        GalleryFragment fragment = new GalleryFragment();
-        Bundle arguments = new Bundle();
-        arguments.putBoolean(ARGUMENT_MULTISELECTION, multiselection);
+        arguments.putBoolean(ARGUMENT_SHOW_VIDEOS, showVideos);
         arguments.putInt(ARGUMENT_MAX_SELECTED_ITEMS, maxSelectedItems);
         fragment.setArguments(arguments);
         return fragment;
@@ -80,6 +76,7 @@ public class GalleryFragment extends Fragment
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {
             multiselection = getArguments().getBoolean(ARGUMENT_MULTISELECTION, false);
+            showVideos = getArguments().getBoolean(ARGUMENT_SHOW_VIDEOS, false);
             maxSelectedItems =
                     getArguments().getInt(ARGUMENT_MAX_SELECTED_ITEMS, Integer.MAX_VALUE);
         }
@@ -123,6 +120,7 @@ public class GalleryFragment extends Fragment
         outState.putIntegerArrayList(KEY_SELECTED_POSITION,
                 galleryAdapter.getSelectedItemsPosition());
         outState.putBoolean(ARGUMENT_MULTISELECTION, multiselection);
+        outState.putBoolean(ARGUMENT_SHOW_VIDEOS, showVideos);
         outState.putInt(ARGUMENT_MAX_SELECTED_ITEMS, maxSelectedItems);
         super.onSaveInstanceState(outState);
     }
@@ -134,6 +132,7 @@ public class GalleryFragment extends Fragment
             galleryMedias = savedInstanceState.getParcelableArrayList(KEY_GALLERY_MEDIA);
             selectedPositions = savedInstanceState.getIntegerArrayList(KEY_SELECTED_POSITION);
             multiselection = savedInstanceState.getBoolean(ARGUMENT_MULTISELECTION);
+            showVideos = savedInstanceState.getBoolean(ARGUMENT_SHOW_VIDEOS);
             maxSelectedItems = savedInstanceState.getInt(ARGUMENT_MAX_SELECTED_ITEMS);
             afterConfigChange();
         }
@@ -261,26 +260,30 @@ public class GalleryFragment extends Fragment
     }
 
     public void camera(Activity activity) {
-        dialog = new Dialog(getContext());
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_gallery);
-        Button takePhotoButton = (Button) dialog.findViewById(R.id.gallery_take_photo);
-        takePhotoButton.setOnClickListener(v -> {
-            dialog.dismiss();
+        if (showVideos) {
+            dialog = new Dialog(getContext());
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(R.layout.dialog_gallery);
+            Button takePhotoButton = (Button) dialog.findViewById(R.id.gallery_take_photo);
+            takePhotoButton.setOnClickListener(v -> {
+                dialog.dismiss();
+                cameraHelper.dispatchGetPictureIntent(activity);
+                dialog = null;
+            });
+            Button recordVideoButton = (Button) dialog.findViewById(R.id.gallery_record_video);
+            recordVideoButton.setOnClickListener(v -> {
+                dialog.dismiss();
+                cameraHelper.dispatchGetVideoIntent(activity);
+                dialog = null;
+            });
+            dialog.show();
+        } else {
             cameraHelper.dispatchGetPictureIntent(activity);
-            dialog = null;
-        });
-        Button recordVideoButton = (Button) dialog.findViewById(R.id.gallery_record_video);
-        recordVideoButton.setOnClickListener(v -> {
-            dialog.dismiss();
-            cameraHelper.dispatchGetVideoIntent(activity);
-            dialog = null;
-        });
-        dialog.show();
+        }
     }
 
     public void getGalleryImages() {
-        galleryHelper.getGalleryAsync();
+        galleryHelper.getGalleryAsync(showVideos);
         showLoading();
     }
 

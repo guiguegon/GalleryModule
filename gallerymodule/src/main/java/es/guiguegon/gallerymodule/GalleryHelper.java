@@ -9,6 +9,7 @@ import android.content.Intent;
 
 public class GalleryHelper {
 
+    private boolean showVideos = true;
     private boolean multiselection;
     private int maxSelectedItems;
 
@@ -25,10 +26,16 @@ public class GalleryHelper {
         return this;
     }
 
+    public GalleryHelper setShowVideos(boolean showVideos) {
+        this.showVideos = showVideos;
+        return this;
+    }
+
     public Intent getCallingIntent(Context context) {
         Intent intent = new Intent(context, GalleryActivity.class);
         intent.putExtra(GalleryActivity.EXTRA_MULTISELECTION, multiselection);
         intent.putExtra(GalleryActivity.EXTRA_MAX_SELECTED_ITEMS, maxSelectedItems);
+        intent.putExtra(GalleryActivity.EXTRA_SHOW_VIDEOS, showVideos);
         return intent;
     }
 }

@@ -20,7 +20,8 @@ import rx.schedulers.Schedulers;
 public class GalleryHelper {
 
     private static GalleryHelper mInstance;
-    private final String TAG = "[" + this.getClass().getSimpleName() + "]";
+    private final String TAG = "[" + this.getClass()
+            .getSimpleName() + "]";
     private GalleryHelperListener galleryHelperListener;
     private Context context;
 
@@ -44,12 +45,14 @@ public class GalleryHelper {
         this.galleryHelperListener = null;
     }
 
-    public void getGalleryAsync() {
+    public void getGalleryAsync(boolean showVideos) {
         final Observable<List<GalleryMedia>> observable =
                 Observable.create((Observable.OnSubscribe<List<GalleryMedia>>) subscriber -> {
-                    subscriber.onNext(getGallery());
+                    subscriber.onNext(getGallery(showVideos));
                     subscriber.onCompleted();
-                }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+                })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread());
         observable.subscribe(this::onGalleryMedia, this::onGalleryError);
     }
 
@@ -69,10 +72,12 @@ public class GalleryHelper {
     }
 
     @WorkerThread
-    private List<GalleryMedia> getGallery() {
+    private List<GalleryMedia> getGallery(boolean showVideos) {
         List<GalleryMedia> galleryMedias = new ArrayList<>();
         galleryMedias.addAll(getGalleryImages());
-        galleryMedias.addAll(getGalleryVideos());
+        if (showVideos) {
+            galleryMedias.addAll(getGalleryVideos());
+        }
         Collections.sort(galleryMedias);
         return galleryMedias;
     }
@@ -82,24 +87,28 @@ public class GalleryHelper {
         ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
         try {
             final String[] columns = {
-                    MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID, MediaStore.Images.Media.MIME_TYPE,
-                    MediaStore.Images.Media.DATE_TAKEN
+                    MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID,
+                    MediaStore.Images.Media.MIME_TYPE, MediaStore.Images.Media.DATE_TAKEN
             };
             final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
             Cursor imageCursor = context.getContentResolver()
-                    .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null, null, orderBy + " DESC");
+                    .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null, null,
+                            orderBy + " DESC");
             if (imageCursor != null) {
                 int dataColumnIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.DATA);
                 int idColumnIndex = imageCursor.getColumnIndex(MediaStore.Images.Media._ID);
-                int mimeTypeColumIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE);
-                int dateTakenColumIndex = imageCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN);
+                int mimeTypeColumIndex =
+                        imageCursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE);
+                int dateTakenColumIndex =
+                        imageCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN);
                 imageCursor.moveToFirst();
                 int imageCount = imageCursor.getCount();
                 for (int i = 0; i < imageCount; i++) {
-                    galleryMedias.add(new GalleryMedia().setMediaUri(imageCursor.getString(dataColumnIndex))
-                            .setId(imageCursor.getLong(idColumnIndex))
-                            .setMimeType(imageCursor.getString(mimeTypeColumIndex))
-                            .setDateTaken(imageCursor.getLong(dateTakenColumIndex)));
+                    galleryMedias.add(
+                            new GalleryMedia().setMediaUri(imageCursor.getString(dataColumnIndex))
+                                    .setId(imageCursor.getLong(idColumnIndex))
+                                    .setMimeType(imageCursor.getString(mimeTypeColumIndex))
+                                    .setDateTaken(imageCursor.getLong(dateTakenColumIndex)));
                     imageCursor.moveToNext();
                 }
                 imageCursor.close();
@@ -115,26 +124,32 @@ public class GalleryHelper {
         ArrayList<GalleryMedia> galleryMedias = new ArrayList<>();
         try {
             final String[] columns = {
-                    MediaStore.Video.Media.DATA, MediaStore.Video.Media._ID, MediaStore.Video.Media.MIME_TYPE,
-                    MediaStore.Video.Media.DATE_TAKEN, MediaStore.Video.Media.DURATION
+                    MediaStore.Video.Media.DATA, MediaStore.Video.Media._ID,
+                    MediaStore.Video.Media.MIME_TYPE, MediaStore.Video.Media.DATE_TAKEN,
+                    MediaStore.Video.Media.DURATION
             };
             final String orderBy = MediaStore.Video.Media.DATE_TAKEN;
             Cursor videoCursor = context.getContentResolver()
-                    .query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, columns, null, null, orderBy + " DESC");
+                    .query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, columns, null, null,
+                            orderBy + " DESC");
             if (videoCursor != null) {
                 int dataColumnIndex = videoCursor.getColumnIndex(MediaStore.Video.Media.DATA);
                 int idColumnIndex = videoCursor.getColumnIndex(MediaStore.Video.Media._ID);
-                int mimeTypeColumIndex = videoCursor.getColumnIndex(MediaStore.Video.Media.MIME_TYPE);
-                int dateTakenColumIndex = videoCursor.getColumnIndex(MediaStore.Video.Media.DATE_TAKEN);
-                int durationColumIndex = videoCursor.getColumnIndex(MediaStore.Video.Media.DURATION);
+                int mimeTypeColumIndex =
+                        videoCursor.getColumnIndex(MediaStore.Video.Media.MIME_TYPE);
+                int dateTakenColumIndex =
+                        videoCursor.getColumnIndex(MediaStore.Video.Media.DATE_TAKEN);
+                int durationColumIndex =
+                        videoCursor.getColumnIndex(MediaStore.Video.Media.DURATION);
                 videoCursor.moveToFirst();
                 int videoCount = videoCursor.getCount();
                 for (int i = 0; i < videoCount; i++) {
-                    galleryMedias.add(new GalleryMedia().setMediaUri(videoCursor.getString(dataColumnIndex))
-                            .setId(videoCursor.getLong(idColumnIndex))
-                            .setMimeType(videoCursor.getString(mimeTypeColumIndex))
-                            .setDateTaken(videoCursor.getLong(dateTakenColumIndex))
-                            .setDuration(videoCursor.getLong(durationColumIndex)));
+                    galleryMedias.add(
+                            new GalleryMedia().setMediaUri(videoCursor.getString(dataColumnIndex))
+                                    .setId(videoCursor.getLong(idColumnIndex))
+                                    .setMimeType(videoCursor.getString(mimeTypeColumIndex))
+                                    .setDateTaken(videoCursor.getLong(dateTakenColumIndex))
+                                    .setDuration(videoCursor.getLong(durationColumIndex)));
                     videoCursor.moveToNext();
                 }
                 videoCursor.close();

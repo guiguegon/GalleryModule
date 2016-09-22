@@ -13,9 +13,11 @@ import java.util.List;
 public class GalleryActivity extends AppCompatActivity {
 
     public static final String EXTRA_MULTISELECTION = "extra_multiselection";
+    public static final String EXTRA_SHOW_VIDEOS = "extra_show_videos";
     public static final String EXTRA_MAX_SELECTED_ITEMS = "extra_max_selected_items";
     public static final String RESULT_GALLERY_MEDIA_LIST = "result_gallery_media_list";
     private boolean multiselection;
+    private boolean showVideos;
     private int maxSelectedItems;
 
     @Override
@@ -24,6 +26,7 @@ public class GalleryActivity extends AppCompatActivity {
         Dexter.initialize(this);
         if (savedInstanceState == null) {
             multiselection = getIntent().getBooleanExtra(EXTRA_MULTISELECTION, false);
+            showVideos = getIntent().getBooleanExtra(EXTRA_SHOW_VIDEOS, true);
             maxSelectedItems = getIntent().getIntExtra(EXTRA_MAX_SELECTED_ITEMS, Integer.MAX_VALUE);
         }
         setContentView(R.layout.activity_gallery);
@@ -34,7 +37,7 @@ public class GalleryActivity extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
         if (savedInstanceState == null) {
             replaceFragment(R.id.fragment_content,
-                    GalleryFragment.newInstance(multiselection, maxSelectedItems));
+                    GalleryFragment.newInstance(multiselection, maxSelectedItems, showVideos));
         }
     }
 
