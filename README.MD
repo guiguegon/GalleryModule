@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/guiguegon/GalleryModule.svg?branch=master)](https://travis-ci.org/guiguegon/GalleryModule)
 [![](https://jitpack.io/v/guiguegon/GalleryModule.svg)](https://jitpack.io/#guiguegon/GalleryModule)
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-GalleryModule-green.svg?style=true)](https://android-arsenal.com/details/1/4382)
 
 # GalleryModule
 Have you ever faced the need of build a gallery for your users to pick a image? or to take a new photo to use it as avatar? GalleryModule
