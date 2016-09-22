@@ -6,15 +6,21 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 import es.guiguegon.gallerymodule.GalleryActivity;
+import es.guiguegon.gallerymodule.GalleryHelper;
 import es.guiguegon.gallerymodule.model.GalleryMedia;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE_GALLERY = 1;
+
+    AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,23 +29,43 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this::openGallery);
+        fab.setOnClickListener(this::showChoiceDialog);
     }
 
-    public void openGallery(View view) {
+    public void showChoiceDialog(View view) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setMessage("Select Gallery mode");
         dialog.setPositiveButton("Single", (dialogInterface, id) -> {
-            openGallery(false);
+            startActivityForResult(new GalleryHelper().setMultiselection(false)
+                    .getCallingIntent(this), REQUEST_CODE_GALLERY);
         });
         dialog.setNegativeButton("Multiple", (dialogInterface, id) -> {
-            openGallery(true);
+            showMaxElementsDialog(view);
         });
         dialog.show();
     }
 
-    public void openGallery(boolean multiselection) {
-        startActivityForResult(GalleryActivity.getCallingIntent(this, multiselection), REQUEST_CODE_GALLERY);
+    public void showMaxElementsDialog(View view) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setMessage("Select Max elements number");
+        final View dialogView = getLayoutInflater().inflate(R.layout.dialog_max_number, null);
+        Button button = (Button) dialogView.findViewById(R.id.max_number_button_ok);
+        button.setOnClickListener((buttonView) -> {
+            EditText editText = (EditText) dialogView.findViewById(R.id.max_number_edit_text);
+            String maxSelectedItems = editText.getText()
+                    .toString();
+            openGalleryMultiselection(TextUtils.isEmpty(maxSelectedItems) ? Integer.MAX_VALUE
+                    : Integer.valueOf(maxSelectedItems));
+            alertDialog.dismiss();
+        });
+        dialog.setView(dialogView);
+        alertDialog = dialog.show();
+    }
+
+    private void openGalleryMultiselection(int maxSelectedItems) {
+        startActivityForResult(new GalleryHelper().setMultiselection(true)
+                .setMaxSelectedItems(maxSelectedItems)
+                .getCallingIntent(this), REQUEST_CODE_GALLERY);
     }
 
     @Override
@@ -48,7 +74,9 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_GALLERY && resultCode == RESULT_OK) {
             List<GalleryMedia> galleryMedias =
                     data.getParcelableArrayListExtra(GalleryActivity.RESULT_GALLERY_MEDIA_LIST);
-            Toast.makeText(this, "Gallery Media selected: " + galleryMedias.size(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Gallery Media selected: " + galleryMedias.size(),
+                    Toast.LENGTH_LONG)
+                    .show();
         }
     }
 }

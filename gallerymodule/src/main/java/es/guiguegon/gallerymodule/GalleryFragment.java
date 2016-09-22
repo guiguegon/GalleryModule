@@ -35,6 +35,7 @@ public class GalleryFragment extends Fragment
         implements GalleryAdapter.OnGalleryClickListener, GalleryHelper.GalleryHelperListener {
 
     private static final String ARGUMENT_MULTISELECTION = "argument_multiselection";
+    private static final String ARGUMENT_MAX_SELECTED_ITEMS = "argument_max_selected_items";
     private static final String KEY_GALLERY_MEDIA = "key_gallery_media";
     private static final String KEY_SELECTED_POSITION = "key_selected_position";
 
@@ -55,6 +56,7 @@ public class GalleryFragment extends Fragment
     MenuItem checkItem;
     Dialog dialog;
     boolean multiselection;
+    int maxSelectedItems;
 
     static GalleryFragment newInstance(boolean multiselection) {
         GalleryFragment fragment = new GalleryFragment();
@@ -64,17 +66,29 @@ public class GalleryFragment extends Fragment
         return fragment;
     }
 
+    static GalleryFragment newInstance(boolean multiselection, int maxSelectedItems) {
+        GalleryFragment fragment = new GalleryFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean(ARGUMENT_MULTISELECTION, multiselection);
+        arguments.putInt(ARGUMENT_MAX_SELECTED_ITEMS, maxSelectedItems);
+        fragment.setArguments(arguments);
+        return fragment;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {
             multiselection = getArguments().getBoolean(ARGUMENT_MULTISELECTION, false);
+            maxSelectedItems =
+                    getArguments().getInt(ARGUMENT_MAX_SELECTED_ITEMS, Integer.MAX_VALUE);
         }
         setHasOptionsMenu(true);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
         galleryHelper = GalleryHelper.getInstance();
         cameraHelper = CameraHelper.getInstance();
         galleryHelper.onCreate(getContext(), this);
@@ -106,8 +120,10 @@ public class GalleryFragment extends Fragment
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelableArrayList(KEY_GALLERY_MEDIA, galleryMedias);
-        outState.putIntegerArrayList(KEY_SELECTED_POSITION, galleryAdapter.getSelectedItemsPosition());
+        outState.putIntegerArrayList(KEY_SELECTED_POSITION,
+                galleryAdapter.getSelectedItemsPosition());
         outState.putBoolean(ARGUMENT_MULTISELECTION, multiselection);
+        outState.putInt(ARGUMENT_MAX_SELECTED_ITEMS, maxSelectedItems);
         super.onSaveInstanceState(outState);
     }
 
@@ -118,6 +134,7 @@ public class GalleryFragment extends Fragment
             galleryMedias = savedInstanceState.getParcelableArrayList(KEY_GALLERY_MEDIA);
             selectedPositions = savedInstanceState.getIntegerArrayList(KEY_SELECTED_POSITION);
             multiselection = savedInstanceState.getBoolean(ARGUMENT_MULTISELECTION);
+            maxSelectedItems = savedInstanceState.getInt(ARGUMENT_MAX_SELECTED_ITEMS);
             afterConfigChange();
         }
     }
@@ -125,7 +142,8 @@ public class GalleryFragment extends Fragment
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        GalleryMedia galleryMedia = cameraHelper.onGetPictureIntentResults(requestCode, resultCode, data);
+        GalleryMedia galleryMedia =
+                cameraHelper.onGetPictureIntentResults(requestCode, resultCode, data);
         if (galleryMedia != null) {
             onGalleryMedia(galleryMedia);
         }
@@ -136,10 +154,12 @@ public class GalleryFragment extends Fragment
         int columns = getMaxColumns();
         galleryAdapter = new GalleryAdapter(getContext(), columns);
         galleryAdapter.setMultiselection(multiselection);
-        staggeredGridLayoutManager = new StaggeredGridLayoutManager(columns, StaggeredGridLayoutManager.VERTICAL);
+        staggeredGridLayoutManager =
+                new StaggeredGridLayoutManager(columns, StaggeredGridLayoutManager.VERTICAL);
         galleryRecyclerView.setLayoutManager(staggeredGridLayoutManager);
         galleryRecyclerView.setAdapter(galleryAdapter);
         galleryAdapter.setOnGalleryClickListener(this);
+        galleryAdapter.setMaxSelectedItems(maxSelectedItems);
         btnRetry.setOnClickListener(this::onButtonRetryClick);
     }
 
@@ -163,7 +183,8 @@ public class GalleryFragment extends Fragment
 
     public int getMaxColumns() {
         int widthRecyclerViewMediaFiles = ScreenUtils.getScreenWidth(getContext());
-        int sizeItemsRecyclerView = getResources().getDimensionPixelSize(R.dimen.gallery_item_min_width);
+        int sizeItemsRecyclerView =
+                getResources().getDimensionPixelSize(R.dimen.gallery_item_min_width);
         return widthRecyclerViewMediaFiles / sizeItemsRecyclerView;
     }
 
@@ -202,8 +223,10 @@ public class GalleryFragment extends Fragment
 
     protected void setToolbar(Toolbar toolbar) {
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setHomeButtonEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar()
+                .setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar()
+                .setHomeButtonEnabled(true);
     }
 
     @Override
@@ -218,8 +241,9 @@ public class GalleryFragment extends Fragment
     @Override
     public void onCameraClick() {
         try {
-            PermissionsManager.requestMultiplePermissions((ViewGroup) getView(), () -> camera(getActivity()),
-                    Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            PermissionsManager.requestMultiplePermissions((ViewGroup) getView(),
+                    () -> camera(getActivity()), Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
         } catch (Exception e) {
             showError(getString(R.string.gallery_exception_necessary_permissions));
         }
@@ -227,8 +251,9 @@ public class GalleryFragment extends Fragment
 
     public void getGalleryMedia() {
         try {
-            PermissionsManager.requestMultiplePermissions((ViewGroup) getView(), this::getGalleryImages,
-                    this::showRetry, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            PermissionsManager.requestMultiplePermissions((ViewGroup) getView(),
+                    this::getGalleryImages, this::showRetry,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
         } catch (Exception e) {
             showError(getString(R.string.gallery_exception_necessary_permissions));
             showRetry();
@@ -261,7 +286,8 @@ public class GalleryFragment extends Fragment
 
     public void showError(String message) {
         hideLoading();
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG)
+                .show();
     }
 
     public void onGalleryMedia(GalleryMedia galleryMedia) {
@@ -278,7 +304,8 @@ public class GalleryFragment extends Fragment
 
     public void onGalleryMediaSelected(ArrayList<GalleryMedia> galleryMedias) {
         Intent intent = new Intent();
-        intent.putParcelableArrayListExtra(GalleryActivity.RESULT_GALLERY_MEDIA_LIST, galleryMedias);
+        intent.putParcelableArrayListExtra(GalleryActivity.RESULT_GALLERY_MEDIA_LIST,
+                galleryMedias);
         getActivity().setResult(Activity.RESULT_OK, intent);
         getActivity().supportFinishAfterTransition();
     }

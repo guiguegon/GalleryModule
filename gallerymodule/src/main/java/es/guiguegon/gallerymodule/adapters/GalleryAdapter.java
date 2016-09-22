@@ -25,11 +25,12 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
     private final static int VIEW_HOLDER_TYPE_HEADER = 1;
     private final static int VIEW_HOLDER_TYPE_ITEM = 2;
     private final String TAG = "[" + this.getClass().getSimpleName() + "]";
-    ArrayList<GalleryMedia> galleryMedias;
-    WeakReference<OnGalleryClickListener> onGalleryClickListenerWeak;
-    boolean multiselection;
-    int itemWidth;
-    int itemHeight;
+    private ArrayList<GalleryMedia> galleryMedias;
+    private WeakReference<OnGalleryClickListener> onGalleryClickListenerWeak;
+    private boolean multiselection;
+    private int itemWidth;
+    private int itemHeight;
+    private int maxSelectedItems = Integer.MAX_VALUE;
 
     public GalleryAdapter(Context context, int columns) {
         galleryMedias = new ArrayList<>();
@@ -39,6 +40,10 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
 
     public void setMultiselection(boolean multiselection) {
         this.multiselection = multiselection;
+    }
+
+    public void setMaxSelectedItems(int maxSelectedItems) {
+        this.maxSelectedItems = maxSelectedItems;
     }
 
     public void setOnGalleryClickListener(OnGalleryClickListener onGalleryClickListener) {
@@ -124,11 +129,15 @@ public class GalleryAdapter extends SelectableAdapter<RecyclerView.ViewHolder> {
             galleryItemViewHolder.galleryItemVideoDuration.setVisibility(View.GONE);
         }
         galleryItemViewHolder.galleryItemLayout.setOnClickListener(v -> {
-            if (multiselection) {
+            if (multiselection && canSelectItem(position)) {
                 toggleSelection(position);
             }
             onGalleryClickListenerWeak.get().onGalleryClick(galleryMedia);
         });
+    }
+
+    private boolean canSelectItem(int position) {
+        return isSelected(position) || getSelectedItemCount() < maxSelectedItems;
     }
 
     public void fill(GalleryHeaderViewHolder galleryHeaderViewHolder) {
