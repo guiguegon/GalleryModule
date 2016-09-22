@@ -152,13 +152,13 @@ public class GalleryFragment extends Fragment
         setToolbar(toolbar);
         int columns = getMaxColumns();
         galleryAdapter = new GalleryAdapter(getContext(), columns);
-        galleryAdapter.setMultiselection(multiselection);
         staggeredGridLayoutManager =
                 new StaggeredGridLayoutManager(columns, StaggeredGridLayoutManager.VERTICAL);
         galleryRecyclerView.setLayoutManager(staggeredGridLayoutManager);
         galleryRecyclerView.setAdapter(galleryAdapter);
-        galleryAdapter.setOnGalleryClickListener(this);
+        galleryAdapter.setMultiselection(multiselection);
         galleryAdapter.setMaxSelectedItems(maxSelectedItems);
+        galleryAdapter.setOnGalleryClickListener(this);
         btnRetry.setOnClickListener(this::onButtonRetryClick);
     }
 
@@ -167,8 +167,9 @@ public class GalleryFragment extends Fragment
     }
 
     protected void afterConfigChange() {
-        galleryAdapter.setMultiselection(multiselection);
         fillGalleryMedia();
+        galleryAdapter.setMultiselection(multiselection);
+        galleryAdapter.setMaxSelectedItems(maxSelectedItems);
     }
 
     @Override
