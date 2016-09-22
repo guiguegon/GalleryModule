@@ -12,7 +12,7 @@ See GalleryModule post series in my [blog](http://guiguegon.es/blog/)
 ## Download
 Add the following dependency to your gradle file
 ```java
-compile 'es.guiguegon:gallerymodule:1.2.4'
+compile 'es.guiguegon:gallerymodule:1.3.0'
 ```
 
 or use JitPack [![](https://jitpack.io/v/guiguegon/GalleryModule.svg)](https://jitpack.io/#guiguegon/GalleryModule)
@@ -21,8 +21,12 @@ or use JitPack [![](https://jitpack.io/v/guiguegon/GalleryModule.svg)](https://j
 The minimum API is 15. Working with API 24
 
 ```java
-public void openGallery(boolean multiselection) {
-    startActivityForResult(GalleryActivity.getCallingIntent(this, multiselection), REQUEST_CODE_GALLERY);
+public void openGallery() {
+      startActivityForResult(new GalleryHelper()
+                    .setMultiselection(true)
+                    .setMaxSelectedItems(maxSelectedItems)
+                    .setShowVideos(showVideos))
+                    .getCallingIntent(this), REQUEST_CODE_GALLERY);
 }
 
 @Override
@@ -36,8 +40,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 }
 ```
 
-Just start GalleryActivity with the parameter *multiselection* to allow selection of one or more images. The results are returned
-within data Intent of **onActivityResult**. GalleryMedia is a simple model for returning the data.
+The results are returned within data Intent of **onActivityResult**. GalleryMedia is a simple model for returning the data.
 
 ```java
 public class GalleryMedia implements Comparable<GalleryMedia>, Parcelable {
@@ -50,6 +53,12 @@ public class GalleryMedia implements Comparable<GalleryMedia>, Parcelable {
     ...
 }
 ```
+
+## Parameters
+
++ **multiselection** allows to pick more than one picture/video
++ **maxSelectedItems** limit the number of items that can be selected
++ **showVideos** show gallery videos or not
 
 ## Screenshots
 
